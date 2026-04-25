@@ -98,7 +98,7 @@ document.body.appendChild(pill);
 let recordingMode: Settings["recordingMode"] = "pushToTalk";
 let targetLevel = 0;
 let displayLevel = 0;
-let phase: "idle" | "recording" | "transcribing" = "idle";
+let phase: "idle" | "recording" | "transcribing" | "error" = "idle";
 
 function renderBars(level: number) {
   const l = Math.max(0, Math.min(1, level));
@@ -114,16 +114,19 @@ function renderBars(level: number) {
   }
 }
 
-function setPhase(next: "idle" | "recording" | "transcribing") {
+function setPhase(next: "idle" | "recording" | "transcribing" | "error") {
   phase = next;
   const rec = next === "recording";
   const typing = next === "transcribing";
+  const err = next === "error";
   // keep HUD minimal: no text, only colors + meter
   mic.style.transform = rec ? "scale(1.05)" : typing ? "scale(0.98)" : "scale(1)";
   mic.style.background = rec
     ? "linear-gradient(180deg,rgba(200,150,60,0.70),rgba(120,85,30,0.90))"
     : typing
       ? "linear-gradient(180deg,rgba(70,90,120,0.40),rgba(35,45,70,0.70))"
+      : err
+        ? "linear-gradient(180deg,rgba(200,70,70,0.55),rgba(110,30,30,0.85))"
       : "linear-gradient(180deg,rgba(60,90,160,0.55),rgba(35,50,90,0.75))";
   renderBars(displayLevel);
 }
@@ -134,6 +137,7 @@ void listen<HudPayload>("vv:hud", (e) => {
   }
   if (e.payload.phase === "recording") setPhase("recording");
   if (e.payload.phase === "transcribing") setPhase("transcribing");
+  if (e.payload.phase === "error") setPhase("error");
   if (e.payload.phase === "idle") setPhase("idle");
 });
 

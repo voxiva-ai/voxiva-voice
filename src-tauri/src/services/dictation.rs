@@ -66,6 +66,14 @@ fn emit_hud_phase(app: &AppHandle, phase: &str) {
     let _ = app.emit_to("hud", "vv:hud", serde_json::json!({ "phase": phase }));
 }
 
+fn emit_hud_error(app: &AppHandle, message: &str) {
+    let _ = app.emit_to(
+        "hud",
+        "vv:hud",
+        serde_json::json!({ "phase": "error", "message": message }),
+    );
+}
+
 pub fn begin_session(app: AppHandle, settings: AppSettings) {
     let gate = match app.try_state::<DictationGate>() {
         Some(g) => g,
@@ -111,6 +119,10 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
             Ok(a) => a,
             Err(e) => {
                 tracing::warn!("audio capture: {e}");
+                emit_hud_error(
+                    &app_th,
+                    "Microphone is busy or blocked. Close apps using mic (Discord/Zoom) or allow microphone access in Windows Settings.",
+                );
                 audio::CapturedAudio {
                     samples: Vec::new(),
                     sample_rate_hz: 0,

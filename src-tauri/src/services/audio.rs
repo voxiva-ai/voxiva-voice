@@ -14,6 +14,97 @@ pub struct CapturedAudio {
     pub sample_rate_hz: u32,
 }
 
+fn build_stream_with_level_cb<F>(
+    device: &cpal::Device,
+    cfg: &cpal::StreamConfig,
+    sample_format: SampleFormat,
+    channels: usize,
+    stop: Arc<AtomicBool>,
+    samples: Arc<Mutex<Vec<f32>>>,
+    mut on_level: Option<F>,
+) -> Result<cpal::Stream, cpal::BuildStreamError>
+where
+    F: FnMut(f32) + Send + 'static,
+{
+    let err_fn = |e| tracing::warn!("cpal stream error: {e}");
+
+    match sample_format {
+        SampleFormat::F32 => device.build_input_stream(
+            cfg,
+            move |data: &[f32], _| {
+                if stop.load(Ordering::Relaxed) {
+                    return;
+                }
+                if let Some(cb) = on_level.as_mut() {
+                    let mut sum = 0.0f32;
+                    let mut n = 0usize;
+                    for frame in data.chunks(channels) {
+                        let m = if channels == 1 {
+                            frame[0]
+                        } else {
+                            frame.iter().copied().sum::<f32>() / channels.max(1) as f32
+                        };
+                        sum += m * m;
+                        n += 1;
+                    }
+                    if n > 0 {
+                        cb((sum / n as f32).sqrt());
+                    }
+                }
+                if channels == 1 {
+                    samples.lock().unwrap().extend_from_slice(data);
+                } else {
+                    let mut lock = samples.lock().unwrap();
+                    for frame in data.chunks(channels) {
+                        let m = frame.iter().copied().sum::<f32>() / channels.max(1) as f32;
+                        lock.push(m);
+                    }
+                }
+            },
+            err_fn,
+            None,
+        ),
+        SampleFormat::I16 => device.build_input_stream(
+            cfg,
+            move |data: &[i16], _| {
+                if stop.load(Ordering::Relaxed) {
+                    return;
+                }
+                if let Some(cb) = on_level.as_mut() {
+                    let mut sum = 0.0f32;
+                    let mut n = 0usize;
+                    for frame in data.chunks(channels) {
+                        let m = if channels == 1 {
+                            frame[0] as f32 / 32768.0
+                        } else {
+                            frame.iter().map(|s| *s as f32 / 32768.0).sum::<f32>()
+                                / channels.max(1) as f32
+                        };
+                        sum += m * m;
+                        n += 1;
+                    }
+                    if n > 0 {
+                        cb((sum / n as f32).sqrt());
+                    }
+                }
+                let mut lock = samples.lock().unwrap();
+                if channels == 1 {
+                    lock.extend(data.iter().map(|s| *s as f32 / 32768.0));
+                } else {
+                    for frame in data.chunks(channels) {
+                        let m = frame.iter().map(|s| *s as f32 / 32768.0).sum::<f32>()
+                            / channels.max(1) as f32;
+                        lock.push(m);
+                    }
+                }
+            },
+            err_fn,
+            None,
+        ),
+        _ => device.build_input_stream(cfg, move |_data: &[f32], _| {}, err_fn, None),
+    }
+}
+
 /// Records mono `f32` samples until `stop` is set to `true`, then stops the stream.
 pub fn record_while_stopped<F>(
     stop: &Arc<AtomicBool>,
@@ -22,9 +113,12 @@ pub fn record_while_stopped<F>(
 where
     F: FnMut(f32) + Send + 'static,
 {
+    // When another app is using the microphone (Discord, Zoom, etc.), opening the stream
+    // can temporarily fail (depending on device/driver/exclusive mode). We'll retry a bit.
+    const RETRIES: usize = 6;
+    const RETRY_SLEEP_MS: u64 = 250;
+
     let stop = Arc::clone(stop);
-    let stop_f32 = stop.clone();
-    let stop_i16 = stop.clone();
     let host = cpal::default_host();
     let device = host
         .default_input_device()
@@ -39,93 +133,48 @@ where
 
     let samples = Arc::new(Mutex::new(Vec::<f32>::new()));
     let samples_cb = samples.clone();
-    let err_fn = |e| tracing::warn!("cpal stream error: {e}");
 
-    let stream = match sample_format {
-        SampleFormat::F32 => device
-            .build_input_stream(
+    let mut last_err: Option<String> = None;
+    let mut stream_opt = None;
+
+    for attempt in 0..RETRIES {
+        let res = match sample_format {
+            SampleFormat::F32 | SampleFormat::I16 => build_stream_with_level_cb(
+                &device,
                 &cfg,
-                move |data: &[f32], _| {
-                    if stop_f32.load(Ordering::Relaxed) {
-                        return;
-                    }
-                    if let Some(cb) = on_level.as_mut() {
-                        // quick RMS over this chunk (mono or averaged)
-                        let mut sum = 0.0f32;
-                        let mut n = 0usize;
-                        for frame in data.chunks(channels) {
-                            let m = if channels == 1 {
-                                frame[0]
-                            } else {
-                                frame.iter().copied().sum::<f32>() / channels.max(1) as f32
-                            };
-                            sum += m * m;
-                            n += 1;
-                        }
-                        if n > 0 {
-                            let rms = (sum / n as f32).sqrt();
-                            cb(rms);
-                        }
-                    }
-                    if channels == 1 {
-                        samples_cb.lock().unwrap().extend_from_slice(data);
-                    } else {
-                        for frame in data.chunks(channels) {
-                            let m = frame.iter().copied().sum::<f32>() / channels.max(1) as f32;
-                            samples_cb.lock().unwrap().push(m);
-                        }
-                    }
-                },
-                err_fn,
-                None,
-            )
-            .map_err(|e| e.to_string())?,
-        SampleFormat::I16 => device
-            .build_input_stream(
-                &cfg,
-                move |data: &[i16], _| {
-                    if stop_i16.load(Ordering::Relaxed) {
-                        return;
-                    }
-                    if let Some(cb) = on_level.as_mut() {
-                        let mut sum = 0.0f32;
-                        let mut n = 0usize;
-                        for frame in data.chunks(channels) {
-                            let m = if channels == 1 {
-                                frame[0] as f32 / 32768.0
-                            } else {
-                                frame.iter().map(|s| *s as f32 / 32768.0).sum::<f32>()
-                                    / channels.max(1) as f32
-                            };
-                            sum += m * m;
-                            n += 1;
-                        }
-                        if n > 0 {
-                            let rms = (sum / n as f32).sqrt();
-                            cb(rms);
-                        }
-                    }
-                    let mut lock = samples_cb.lock().unwrap();
-                    if channels == 1 {
-                        lock.extend(data.iter().map(|s| *s as f32 / 32768.0));
-                    } else {
-                        for frame in data.chunks(channels) {
-                            let m = frame.iter().map(|s| *s as f32 / 32768.0).sum::<f32>()
-                                / channels.max(1) as f32;
-                            lock.push(m);
-                        }
-                    }
-                },
-                err_fn,
-                None,
-            )
-            .map_err(|e| e.to_string())?,
-        other => {
-            return Err(format!(
-                "unsupported microphone sample format {other:?} (try a device that exposes f32 or i16)"
-            ));
+                sample_format,
+                channels,
+                stop.clone(),
+                samples_cb.clone(),
+                on_level.take(),
+            ),
+            other => {
+                return Err(format!(
+                    "unsupported microphone sample format {other:?} (try a device that exposes f32 or i16)"
+                ));
+            }
+        };
+
+        match res {
+            Ok(s) => {
+                stream_opt = Some(s);
+                break;
+            }
+            Err(e) => {
+                last_err = Some(e.to_string());
+                tracing::warn!(
+                    "mic stream open failed (attempt {}/{RETRIES}): {}",
+                    attempt + 1,
+                    last_err.as_deref().unwrap_or("unknown error")
+                );
+                thread::sleep(Duration::from_millis(RETRY_SLEEP_MS));
+            }
         }
-    };
+    }
+
+    let stream = stream_opt.ok_or_else(|| {
+        last_err.unwrap_or_else(|| "failed to open microphone stream".to_string())
+    })?;
 
     stream.play().map_err(|e| e.to_string())?;
     while !stop.load(Ordering::Relaxed) {
