@@ -1,0 +1,20 @@
+:root {
+  color-scheme: dark;
+
+  --vv-bg-deep: #070a10;
+  --vv-bg: #0c101a;
+  --vv-surface: #121826;
+  --vv-elevated: #171d2e;
+  --vv-border: rgba(255, 255, 255, 0.08);
+  --vv-text: #e8ecf4;
+  --vv-muted: #8b93a7;
+  --vv-accent: #5b8cff;
+  --vv-accent-soft: rgba(91, 140, 255, 0.18);
+  --vv-warn: #f0c14b;
+  --vv-radius-lg: 16px;
+  --vv-radius-md: 12px;
+  --vv-radius-sm: 8px;
+  --vv-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  --vv-font: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --vv-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+}

@@ -1,0 +1,66 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="32%" cy="28%" r="80%">
+      <stop offset="0%" stop-color="#7BB2FF"/>
+      <stop offset="55%" stop-color="#5B8CFF"/>
+      <stop offset="100%" stop-color="#233A9B"/>
+    </radialGradient>
+    <linearGradient id="shine" x1="240" y1="160" x2="880" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="rgba(255,255,255,0.28)"/>
+      <stop offset="1" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+    <linearGradient id="g1" x1="280" y1="300" x2="820" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1020"/>
+      <stop offset="1" stop-color="#0B1020"/>
+    </linearGradient>
+    <linearGradient id="wave1" x1="300" y1="280" x2="760" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0C14B"/>
+      <stop offset="1" stop-color="#E6A93B"/>
+    </linearGradient>
+    <linearGradient id="wave2" x1="260" y1="260" x2="780" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DCE7FF"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Irregular rounded blob background -->
+  <path
+    d="M512 64c140 0 206 50 278 122s122 138 122 278-50 206-122 278-138 122-278 122-206-50-278-122S112 652 112 512s50-206 122-278S372 64 512 64Z"
+    fill="url(#bg)"
+  />
+  <path
+    d="M512 92c120 0 180 42 244 106s106 124 106 244-42 180-106 244-124 106-244 106-180-42-244-106S162 622 162 512s42-180 106-244S392 92 512 92Z"
+    fill="url(#shine)"
+    opacity="0.55"
+  />
+
+  <!-- Dark plate -->
+  <path
+    d="M512 220c86 0 127 30 174 77s77 88 77 174-30 127-77 174-88 77-174 77-127-30-174-77-77-88-77-174 30-127 77-174 88-77 174-77Z"
+    fill="url(#g1)"
+    opacity="0.92"
+    filter="url(#soft)"
+  />
+
+  <!-- Voice waves / mic hint -->
+  <path
+    d="M330 420c52 150 96 248 182 248s130-98 182-248"
+    stroke="url(#wave2)"
+    stroke-width="64"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.92"
+  />
+  <path
+    d="M372 444c40 112 70 184 140 184s100-72 140-184"
+    stroke="url(#wave1)"
+    stroke-width="40"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.95"
+  />
+</svg>
+

@@ -1,0 +1,36 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--vv-font);
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(91, 140, 255, 0.12), transparent),
+    var(--vv-bg-deep);
+  color: var(--vv-text);
+}
+
+#root {
+  height: 100%;
+}
+
+a {
+  color: var(--vv-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}

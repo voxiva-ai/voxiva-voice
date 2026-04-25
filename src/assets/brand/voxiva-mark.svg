@@ -1,0 +1,41 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g1" x1="64" y1="40" x2="208" y2="216" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5B8CFF"/>
+      <stop offset="1" stop-color="#3A5FD6"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="56" y1="208" x2="200" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0C14B"/>
+      <stop offset="1" stop-color="#E6A93B"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded hexagon container -->
+  <path
+    d="M128 16c10 0 19 5 25 13l58 78c5 6 7 14 6 22l-10 96c-2 17-16 31-33 33l-96 10c-8 1-16-1-22-6L29 184c-8-6-13-15-13-25V128c0-10 5-19 13-25l78-58c6-5 14-7 22-6Z"
+    fill="rgba(12,16,26,0.92)"
+    filter="url(#soft)"
+  />
+
+  <!-- Voice 'V' waves -->
+  <path
+    d="M66 84c18 52 33 86 62 86s44-34 62-86"
+    stroke="url(#g1)"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.95"
+  />
+  <path
+    d="M82 92c14 39 24 64 46 64s32-25 46-64"
+    stroke="url(#g2)"
+    stroke-width="14"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.92"
+  />
+</svg>
+
