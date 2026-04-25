@@ -1,11 +1,12 @@
-param(
-  # GitHub repo in form "owner/name"
-  [string]$Repo = "PavelCRG/Voxiva-Voice",
-  # Asset name pattern to pick from release assets
-  [string]$AssetPattern = "*.msi"
-)
-
 $ErrorActionPreference = "Stop"
+
+# IMPORTANT: this script must work when executed via `irm ... | iex`.
+# Some environments are picky about `param(...)` in that mode, so we avoid it.
+# Optional overrides via env vars:
+# - $env:VOXIVA_REPO (default: PavelCRG/Voxiva-Voice)
+# - $env:VOXIVA_ASSET_PATTERN (default: *.msi)
+$Repo = if ($env:VOXIVA_REPO) { $env:VOXIVA_REPO } else { "PavelCRG/Voxiva-Voice" }
+$AssetPattern = if ($env:VOXIVA_ASSET_PATTERN) { $env:VOXIVA_ASSET_PATTERN } else { "*.msi" }
 
 function Get-LatestRelease {
   $url = "https://api.github.com/repos/$Repo/releases/latest"

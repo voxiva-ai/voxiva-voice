@@ -16,6 +16,12 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 
 Если установка не проходит (ошибка прав) — запустите PowerShell **от имени администратора** и повторите.
 
+Если вы тестируете форк/другой репозиторий, можно указать его так:
+
+```powershell
+$env:VOXIVA_REPO="owner/name"; irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-install.ps1 | iex
+```
+
 ### Как пользоваться
 
 1) Откройте **Voxiva Voice** (меню Пуск)  
@@ -53,6 +59,12 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 ```
 
 If install fails due to permissions, run PowerShell **as Administrator** and retry.
+
+If you're testing a fork/another repo, you can override:
+
+```powershell
+$env:VOXIVA_REPO="owner/name"; irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-install.ps1 | iex
+```
 
 ### How to use
 
