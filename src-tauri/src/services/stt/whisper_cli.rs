@@ -119,7 +119,10 @@ fn parse_whisper_cli_output(s: &str) -> String {
     }
 }
 
-pub fn transcribe_whisper_cli(audio: &CapturedAudio, settings: &AppSettings) -> Result<String, String> {
+pub fn transcribe_whisper_cli(
+    audio: &CapturedAudio,
+    settings: &AppSettings,
+) -> Result<String, String> {
     let cli = resolve_cli_path(settings)?;
     let model = resolve_model_path(settings)?;
     if !cli.exists() {
@@ -185,4 +188,3 @@ pub fn transcribe_whisper_cli(audio: &CapturedAudio, settings: &AppSettings) -> 
     }
     Ok(text)
 }
-

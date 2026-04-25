@@ -123,9 +123,7 @@ where
     let device = host
         .default_input_device()
         .ok_or_else(|| "no default input device".to_string())?;
-    let config = device
-        .default_input_config()
-        .map_err(|e| e.to_string())?;
+    let config = device.default_input_config().map_err(|e| e.to_string())?;
     let sample_format = config.sample_format();
     let cfg: cpal::StreamConfig = config.clone().into();
     let channels = cfg.channels as usize;

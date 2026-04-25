@@ -18,6 +18,7 @@ pub enum AppError {
 pub type Result<T> = std::result::Result<T, AppError>;
 
 /// Wire-safe error shape for future `invoke` error mapping.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorPayload {

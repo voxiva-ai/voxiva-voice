@@ -6,8 +6,8 @@
 use crate::config::{AppSettings, DictationLanguage, SttMode};
 use crate::services::audio::CapturedAudio;
 
-mod whisper_cli;
 pub mod bootstrap_whisper;
+mod whisper_cli;
 
 pub fn transcribe(audio: &CapturedAudio, settings: &AppSettings) -> String {
     match settings.stt_mode {

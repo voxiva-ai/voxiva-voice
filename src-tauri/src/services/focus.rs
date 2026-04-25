@@ -60,7 +60,11 @@ pub fn start_focus_watcher(app: AppHandle) {
         }
         let Some(app) = APP.get() else { return };
         let title = super::focus::foreground_window_title().unwrap_or_default();
-        let _ = app.emit_to("hud", "vv:hud", serde_json::json!({ "phase": "idle", "target": title }));
+        let _ = app.emit_to(
+            "hud",
+            "vv:hud",
+            serde_json::json!({ "phase": "idle", "target": title }),
+        );
         // Only show HUD when main window is minimized.
         let show_hud = app
             .get_webview_window("main")

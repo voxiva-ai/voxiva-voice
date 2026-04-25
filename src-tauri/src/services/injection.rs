@@ -21,9 +21,13 @@ pub fn paste_text(text: &str) -> Result<(), String> {
         for m in mods {
             enigo.key(*m, Direction::Press).map_err(|e| e.to_string())?;
         }
-        enigo.key(key, Direction::Click).map_err(|e| e.to_string())?;
+        enigo
+            .key(key, Direction::Click)
+            .map_err(|e| e.to_string())?;
         for m in mods.iter().rev() {
-            enigo.key(*m, Direction::Release).map_err(|e| e.to_string())?;
+            enigo
+                .key(*m, Direction::Release)
+                .map_err(|e| e.to_string())?;
         }
         Ok(())
     }

@@ -59,7 +59,11 @@ fn emit_hud(app: &AppHandle, phase: &str, target: Option<String>) {
 }
 
 fn emit_hud_level(app: &AppHandle, level: f32) {
-    let _ = app.emit_to("hud", "vv:hud", serde_json::json!({ "phase": "recording", "level": level }));
+    let _ = app.emit_to(
+        "hud",
+        "vv:hud",
+        serde_json::json!({ "phase": "recording", "level": level }),
+    );
 }
 
 fn emit_hud_phase(app: &AppHandle, phase: &str) {
@@ -101,21 +105,30 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
                 None => return,
             };
             let g = gate.inner.lock().unwrap();
-            g.stop.clone().unwrap_or_else(|| Arc::new(AtomicBool::new(true)))
+            g.stop
+                .clone()
+                .unwrap_or_else(|| Arc::new(AtomicBool::new(true)))
         };
 
         let app_levels = app_th.clone();
         let mut last_emit = std::time::Instant::now();
-        let audio = match audio::record_while_stopped(&stop, Some(move |rms: f32| {
-            // throttle ~20fps
-            if last_emit.elapsed().as_millis() < 50 {
-                return;
-            }
-            last_emit = std::time::Instant::now();
-            // normalize to 0..1 (roughly)
-            let level: f32 = (rms * 3.5f32).min(1.0f32);
-            let _ = app_levels.emit_to("hud", "vv:hud", serde_json::json!({ "phase": "recording", "level": level }));
-        })) {
+        let audio = match audio::record_while_stopped(
+            &stop,
+            Some(move |rms: f32| {
+                // throttle ~20fps
+                if last_emit.elapsed().as_millis() < 50 {
+                    return;
+                }
+                last_emit = std::time::Instant::now();
+                // normalize to 0..1 (roughly)
+                let level: f32 = (rms * 3.5f32).min(1.0f32);
+                let _ = app_levels.emit_to(
+                    "hud",
+                    "vv:hud",
+                    serde_json::json!({ "phase": "recording", "level": level }),
+                );
+            }),
+        ) {
             Ok(a) => a,
             Err(e) => {
                 tracing::warn!("audio capture: {e}");
@@ -205,34 +218,37 @@ pub fn start_voice_activation_loop(app: AppHandle) {
         let silence_ms: u64 = 650;
         let min_speech_ms: u64 = 350;
 
-        let captured = audio::record_while_stopped(&stop, Some(move |rms: f32| {
-            // normalize to 0..1
-            let level: f32 = (rms * 3.5f32).min(1.0f32);
-            emit_hud_level(&app_lv, level);
+        let captured = audio::record_while_stopped(
+            &stop,
+            Some(move |rms: f32| {
+                // normalize to 0..1
+                let level: f32 = (rms * 3.5f32).min(1.0f32);
+                emit_hud_level(&app_lv, level);
 
-            // track sample index to trim pre-roll later
-            let mut seen = samples_seen_lv.lock().unwrap();
-            *seen = seen.saturating_add(800); // rough; audio::record_while_stopped chunks vary, but ok for start trim estimation
+                // track sample index to trim pre-roll later
+                let mut seen = samples_seen_lv.lock().unwrap();
+                *seen = seen.saturating_add(800); // rough; audio::record_while_stopped chunks vary, but ok for start trim estimation
 
-            if level >= voice_th {
-                *last_voice_lv.lock().unwrap() = Some(std::time::Instant::now());
-                if start_idx_lv.lock().unwrap().is_none() {
-                    *start_idx_lv.lock().unwrap() = Some(*seen);
-                }
-            }
-
-            // If we have started, stop after silence.
-            if start_idx_lv.lock().unwrap().is_some() {
-                let last = last_voice_lv.lock().unwrap().clone();
-                if let Some(t) = last {
-                    if t.elapsed().as_millis() as u64 > silence_ms {
-                        stop_lv.store(true, Ordering::Relaxed);
+                if level >= voice_th {
+                    *last_voice_lv.lock().unwrap() = Some(std::time::Instant::now());
+                    if start_idx_lv.lock().unwrap().is_none() {
+                        *start_idx_lv.lock().unwrap() = Some(*seen);
                     }
                 }
-            }
 
-            let _ = sample_rate_lv;
-        }));
+                // If we have started, stop after silence.
+                if start_idx_lv.lock().unwrap().is_some() {
+                    let last = *last_voice_lv.lock().unwrap();
+                    if let Some(t) = last {
+                        if t.elapsed().as_millis() as u64 > silence_ms {
+                            stop_lv.store(true, Ordering::Relaxed);
+                        }
+                    }
+                }
+
+                let _ = sample_rate_lv;
+            }),
+        );
 
         let Ok(mut captured) = captured else {
             std::thread::sleep(std::time::Duration::from_millis(120));

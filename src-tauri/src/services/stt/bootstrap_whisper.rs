@@ -8,10 +8,12 @@ use tauri::AppHandle;
 use crate::error::Result;
 use crate::{paths, settings_store};
 
-const WHISPER_BIN_URL: &str = "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-x64.zip";
+const WHISPER_BIN_URL: &str =
+    "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-x64.zip";
 // base-q5_1 is fast but can be noticeably less accurate, especially for RU and short phrases.
 // small-q5_1 is still reasonable in size, but much more reliable for everyday dictation.
-const WHISPER_MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
+const WHISPER_MODEL_URL: &str =
+    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
 const VC_REDIST_X64_URL: &str = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
 
 fn whisper_paths(app: &AppHandle) -> Result<(PathBuf, PathBuf, PathBuf)> {
@@ -36,7 +38,10 @@ fn download_to(url: &str, path: &Path) -> std::result::Result<(), String> {
     Ok(())
 }
 
-fn extract_whisper_release_from_zip(zip_path: &Path, out_dir: &Path) -> std::result::Result<(), String> {
+fn extract_whisper_release_from_zip(
+    zip_path: &Path,
+    out_dir: &Path,
+) -> std::result::Result<(), String> {
     let bytes = fs::read(zip_path).map_err(|e| e.to_string())?;
     let reader = Cursor::new(bytes);
     let mut archive = zip::ZipArchive::new(reader).map_err(|e| e.to_string())?;
@@ -123,7 +128,8 @@ pub fn ensure_whisper_assets(app: &AppHandle) -> Result<()> {
         let zip_path = dir.join("whisper-bin-x64.zip");
         tracing::info!("downloading whisper-cli bundle...");
         download_to(WHISPER_BIN_URL, &zip_path).map_err(crate::error::AppError::Config)?;
-        extract_whisper_release_from_zip(&zip_path, &dir).map_err(crate::error::AppError::Config)?;
+        extract_whisper_release_from_zip(&zip_path, &dir)
+            .map_err(crate::error::AppError::Config)?;
         let _ = fs::remove_file(&zip_path);
     }
 
@@ -149,7 +155,8 @@ pub fn ensure_whisper_assets(app: &AppHandle) -> Result<()> {
                 if release_dir.exists() {
                     let _ = fs::remove_dir_all(&release_dir);
                 }
-                extract_whisper_release_from_zip(&zip_path, &dir).map_err(crate::error::AppError::Config)?;
+                extract_whisper_release_from_zip(&zip_path, &dir)
+                    .map_err(crate::error::AppError::Config)?;
                 let _ = fs::remove_file(&zip_path);
                 probe_whisper_cli(&exe).map_err(crate::error::AppError::Config)?;
             }
@@ -170,4 +177,3 @@ pub fn ensure_whisper_assets(app: &AppHandle) -> Result<()> {
 
     Ok(())
 }
-
