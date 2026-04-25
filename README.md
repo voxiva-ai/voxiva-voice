@@ -8,11 +8,13 @@ Voxiva Voice — лёгкая программа для диктовки на **
 
 ### Установка (1 команда PowerShell)
 
-Откройте **PowerShell от имени администратора** и вставьте:
+Откройте PowerShell и вставьте:
 
 ```powershell
 irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-install.ps1 | iex
 ```
+
+Если установка не проходит (ошибка прав) — запустите PowerShell **от имени администратора** и повторите.
 
 ### Как пользоваться
 
@@ -44,11 +46,13 @@ Voxiva Voice is a lightweight dictation app for **English + Russian**.
 
 ### Install (one PowerShell command)
 
-Open **PowerShell as Administrator** and paste:
+Open PowerShell and paste:
 
 ```powershell
 irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-install.ps1 | iex
 ```
+
+If install fails due to permissions, run PowerShell **as Administrator** and retry.
 
 ### How to use
 

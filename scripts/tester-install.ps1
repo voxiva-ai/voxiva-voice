@@ -1,40 +1,60 @@
-# Voxiva Voice — tester installer script
-#
-# What this does:
-# - Downloads the latest Windows .msi from GitHub Releases
-# - Installs it silently
-# - Launches Voxiva Voice
-#
-# Default repo is Voxiva-Voice. You can override:
-#   .\tester-install.ps1 -Repo "owner/name"
-
 $ErrorActionPreference = "Stop"
 
-$Repo = "PavelCRG/Voxiva-Voice"
-$AssetPattern = "*.msi"
-
 param(
-  [string]$Repo = "PavelCRG/Voxiva-Voice"
+  # GitHub repo in form "owner/name"
+  [string]$Repo = "PavelCRG/Voxiva-Voice",
+  # Asset name pattern to pick from release assets
+  [string]$AssetPattern = "*.msi"
 )
 
 function Get-LatestRelease {
   $url = "https://api.github.com/repos/$Repo/releases/latest"
-  Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "VoxivaVoiceTester" }
+  Invoke-RestMethod -Uri $url -Headers @{
+    "User-Agent" = "VoxivaVoiceTester"
+    "Accept"     = "application/vnd.github+json"
+  }
 }
+
+function Find-VoxivaExe {
+  $candidates = @(
+    (Join-Path $env:ProgramFiles        "Voxiva Voice\Voxiva Voice.exe"),
+    (Join-Path ${env:ProgramFiles(x86)} "Voxiva Voice\Voxiva Voice.exe"),
+    (Join-Path $env:LOCALAPPDATA        "Programs\Voxiva Voice\Voxiva Voice.exe")
+  ) | Where-Object { $_ -and (Test-Path $_) }
+
+  if ($candidates.Count -gt 0) { return $candidates[0] }
+  return $null
+}
+
+Write-Host ""
+Write-Host "Voxiva Voice installer" -ForegroundColor Cyan
+Write-Host "Repo: $Repo"
+Write-Host ""
 
 $rel = Get-LatestRelease
 $asset = $rel.assets | Where-Object { $_.name -like $AssetPattern } | Select-Object -First 1
-if (-not $asset) {
-  throw "No release asset matching '$AssetPattern' found in $Repo latest release."
-}
+if (-not $asset) { throw "No release asset matching '$AssetPattern' found in $Repo latest release." }
 
 $tmp = Join-Path $env:TEMP $asset.name
-Write-Host "Downloading $($asset.name) ..."
+Write-Host "Downloading: $($asset.name)"
 Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tmp
 
-Write-Host "Installing silently..."
-Start-Process msiexec.exe -Wait -ArgumentList @("/i", "`"$tmp`"", "/qn", "/norestart")
+Write-Host "Installing (silent)..."
+$p = Start-Process msiexec.exe -Wait -PassThru -ArgumentList @("/i", "`"$tmp`"", "/qn", "/norestart")
+if ($p.ExitCode -ne 0) { throw "MSI install failed (exit code: $($p.ExitCode)). Try running PowerShell as Administrator." }
 
-Write-Host "Launching Voxiva Voice..."
-Start-Process "Voxiva Voice"
+Start-Sleep -Milliseconds 600
+
+$exe = Find-VoxivaExe
+if ($exe) {
+  Write-Host "Launching: $exe"
+  Start-Process -FilePath $exe
+} else {
+  Write-Host "Installed, but couldn't auto-detect exe location." -ForegroundColor Yellow
+  Write-Host "Open it from Start Menu: Voxiva Voice" -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "Done. Hotkey default: Ctrl+Shift+Space" -ForegroundColor Green
+Write-Host "Tip: put cursor in a text field (caret blinking) before dictation." -ForegroundColor Green
 
