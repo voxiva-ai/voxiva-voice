@@ -5,6 +5,9 @@ use std::process::{Command, Stdio};
 use crate::config::{AppSettings, DictationLanguage};
 use crate::services::audio::CapturedAudio;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
 fn resolve_cli_path(settings: &AppSettings) -> Result<PathBuf, String> {
     let Some(p) = settings.whisper_cli_path.as_ref() else {
         return Err("whisperCliPath is not set (point to whisper-cli.exe)".to_string());
@@ -158,6 +161,16 @@ pub fn transcribe_whisper_cli(
         cmd.arg("-l").arg(l);
     }
 
+    // Prevent whisper-cli from being killed by console control events (0xc000013a)
+    // and avoid flashing a console window on Windows.
+    #[cfg(windows)]
+    {
+        const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW);
+    }
+
+    cmd.stdin(Stdio::null());
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let mut child = cmd.spawn().map_err(|e| e.to_string())?;
