@@ -1,11 +1,11 @@
-$ErrorActionPreference = "Stop"
-
 param(
   # GitHub repo in form "owner/name"
   [string]$Repo = "PavelCRG/Voxiva-Voice",
   # Asset name pattern to pick from release assets
   [string]$AssetPattern = "*.msi"
 )
+
+$ErrorActionPreference = "Stop"
 
 function Get-LatestRelease {
   $url = "https://api.github.com/repos/$Repo/releases/latest"
