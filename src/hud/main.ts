@@ -185,6 +185,17 @@ mic.addEventListener("pointerup", (ev) => {
   if (recordingMode === "pushToTalk") micUp();
 });
 
+// Fallback for environments where pointer events are flaky.
+mic.addEventListener("mousedown", (ev) => {
+  ev.preventDefault();
+  if (recordingMode === "pushToTalk") micDown();
+});
+
+mic.addEventListener("mouseup", (ev) => {
+  ev.preventDefault();
+  if (recordingMode === "pushToTalk") micUp();
+});
+
 mic.addEventListener("pointercancel", () => {
   if (recordingMode === "pushToTalk") micUp();
 });
