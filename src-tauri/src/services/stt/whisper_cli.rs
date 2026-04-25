@@ -79,6 +79,22 @@ fn whisper_lang_arg(lang: DictationLanguage) -> Option<&'static str> {
     }
 }
 
+fn whisper_lang_arg_with_locale(settings: &AppSettings) -> Option<&'static str> {
+    // Whisper's auto language detection can be flaky on short utterances, especially RU/EN.
+    // If user didn't choose an explicit dictation language, we "soft-pin" it to UI locale.
+    if let Some(l) = whisper_lang_arg(settings.dictation_language) {
+        return Some(l);
+    }
+    let loc = settings.ui_locale.to_lowercase();
+    if loc.starts_with("ru") {
+        Some("ru")
+    } else if loc.starts_with("en") {
+        Some("en")
+    } else {
+        None
+    }
+}
+
 fn parse_whisper_cli_output(s: &str) -> String {
     // whisper-cli prints segments like:
     // [00:00.000 --> 00:02.000]  hello world
@@ -126,16 +142,16 @@ pub fn transcribe_whisper_cli(audio: &CapturedAudio, settings: &AppSettings) -> 
     cmd.arg("-m").arg(&model);
     cmd.arg("-f").arg(wav_fs_path);
     // Speed tweaks:
-    // - greedy decoding: beam_size=1, best_of=1
+    // - balanced decoding: small beam improves accuracy a lot on short phrases
     // - auto threads based on CPU count
     cmd.args(["-nt", "-np"]);
-    cmd.args(["-bs", "1", "-bo", "1"]);
+    cmd.args(["-bs", "5", "-bo", "5"]);
     let threads = std::thread::available_parallelism()
         .map(|n| n.get().to_string())
         .unwrap_or_else(|_| "4".to_string());
     cmd.args(["-t", threads.as_str()]);
 
-    if let Some(l) = whisper_lang_arg(settings.dictation_language) {
+    if let Some(l) = whisper_lang_arg_with_locale(settings) {
         cmd.arg("-l").arg(l);
     }
 

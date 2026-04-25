@@ -9,13 +9,15 @@ use crate::error::Result;
 use crate::{paths, settings_store};
 
 const WHISPER_BIN_URL: &str = "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-x64.zip";
-const WHISPER_MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base-q5_1.bin";
+// base-q5_1 is fast but can be noticeably less accurate, especially for RU and short phrases.
+// small-q5_1 is still reasonable in size, but much more reliable for everyday dictation.
+const WHISPER_MODEL_URL: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
 const VC_REDIST_X64_URL: &str = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
 
 fn whisper_paths(app: &AppHandle) -> Result<(PathBuf, PathBuf, PathBuf)> {
     let dir = paths::whisper_dir(app)?;
     let exe = dir.join("Release").join("whisper-cli.exe");
-    let model = dir.join("ggml-base-q5_1.bin");
+    let model = dir.join("ggml-small-q5_1.bin");
     Ok((dir, exe, model))
 }
 
@@ -126,7 +128,7 @@ pub fn ensure_whisper_assets(app: &AppHandle) -> Result<()> {
     }
 
     if !model.exists() {
-        tracing::info!("downloading whisper model (base-q5_1)...");
+        tracing::info!("downloading whisper model (small-q5_1)...");
         download_to(WHISPER_MODEL_URL, &model).map_err(crate::error::AppError::Config)?;
     }
 
