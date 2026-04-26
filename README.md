@@ -13,16 +13,6 @@
 
 ## Voxiva Voice
 
-<p align="center">
-  <img src="src/assets/brand/voxiva-mark-a.svg" width="72" height="72" alt="Voxiva mark variation A" />
-  &nbsp;&nbsp;
-  <img src="src/assets/brand/voxiva-mark-b.svg" width="72" height="72" alt="Voxiva mark variation B" />
-  &nbsp;&nbsp;
-  <img src="src/assets/brand/voxiva-mark-c.svg" width="72" height="72" alt="Voxiva mark variation C" />
-</p>
-
-Primary brand recommendation: **Variation A**. It keeps the mark the most balanced and readable at favicon/app-icon sizes while preserving the blue-first shape and gold voice curve.
-
 <a id="ru"></a>
 ### Русский
 
