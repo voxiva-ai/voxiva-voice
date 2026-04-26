@@ -1,11 +1,11 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { HomePage } from "@/pages/HomePage";
 import { SettingsPage } from "@/pages/SettingsPage";
 
 export function AppRouter() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
@@ -13,6 +13,6 @@ export function AppRouter() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

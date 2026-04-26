@@ -1,16 +1,40 @@
 import { Card } from "@/components/ui/Card";
+import logoUrl from "@/assets/brand/voxiva-mark.svg";
 
 export function HomePage() {
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", display: "grid", gap: "1rem" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
-        <div style={{ flex: "1 1 320px" }}>
-          <h1 style={{ margin: "0 0 0.35rem", fontSize: "1.85rem", letterSpacing: "-0.03em" }}>
-            Speak. We type.
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "1.1rem",
+          alignItems: "center",
+          padding: "1.1rem 1.15rem",
+          borderRadius: 18,
+          border: "1px solid rgba(255,255,255,0.10)",
+          background:
+            "radial-gradient(1200px 380px at 30% 0%, rgba(91,140,255,0.16), transparent), linear-gradient(135deg, rgba(18,22,34,0.92), rgba(10,12,18,0.92))",
+          boxShadow: "0 22px 50px rgba(0,0,0,0.35)",
+        }}
+      >
+        <img
+          src={logoUrl}
+          alt="Voxiva Voice"
+          width={62}
+          height={62}
+          style={{
+            borderRadius: 18,
+            flex: "0 0 auto",
+            filter: "drop-shadow(0 16px 26px rgba(0,0,0,0.35))",
+          }}
+        />
+        <div style={{ flex: "1 1 340px", minWidth: 260 }}>
+          <h1 style={{ margin: "0 0 0.35rem", fontSize: "2.05rem", letterSpacing: "-0.04em" }}>
+            Stop typing. Just speak.
           </h1>
           <p style={{ margin: 0, color: "var(--vv-muted)", lineHeight: 1.55 }}>
-            Put the cursor in any app (Notepad, VS Code, browser). Press your hotkey and speak — Voxiva Voice
-            will insert the text into the active window.
+            Put the cursor in any app. Press your hotkey and speak — Voxiva Voice will type it for you.
           </p>
         </div>
       </div>

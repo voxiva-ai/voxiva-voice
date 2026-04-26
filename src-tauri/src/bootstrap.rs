@@ -89,10 +89,15 @@ pub fn init(handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     create_hud_window(handle)?;
     install_tray(handle)?;
     register_hotkey_inner(handle)?;
-    // Free, offline STT bootstrap: download whisper-cli + model into app config dir.
-    // End-users should not need to install anything manually.
-    if let Err(e) = crate::services::stt::bootstrap_whisper::ensure_whisper_assets(handle) {
-        tracing::warn!("whisper bootstrap failed (falling back): {e:?}");
+    // Whisper bootstrap can be IO-heavy. Run it in the background to keep the UI responsive.
+    // In release builds we expect assets to be bundled, so this should be quick.
+    {
+        let h = handle.clone();
+        std::thread::spawn(move || {
+            if let Err(e) = crate::services::stt::bootstrap_whisper::ensure_whisper_assets(&h) {
+                tracing::warn!("whisper bootstrap failed (falling back): {e:?}");
+            }
+        });
     }
     #[cfg(windows)]
     crate::services::focus::start_focus_watcher(handle.clone());

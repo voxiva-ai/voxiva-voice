@@ -3,7 +3,9 @@ use std::io::{Cursor, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
+use tauri::path::BaseDirectory;
 use tauri::AppHandle;
+use tauri::Manager;
 
 use crate::error::Result;
 use crate::{paths, settings_store};
@@ -21,6 +23,57 @@ fn whisper_paths(app: &AppHandle) -> Result<(PathBuf, PathBuf, PathBuf)> {
     let exe = dir.join("Release").join("whisper-cli.exe");
     let model = dir.join("ggml-small-q5_1.bin");
     Ok((dir, exe, model))
+}
+
+fn bundled_whisper_paths(app: &AppHandle) -> std::result::Result<(PathBuf, PathBuf), String> {
+    let exe = app
+        .path()
+        .resolve("whisper/Release/whisper-cli.exe", BaseDirectory::Resource)
+        .map_err(|e| e.to_string())?;
+    let model = app
+        .path()
+        .resolve("whisper/ggml-small-q5_1.bin", BaseDirectory::Resource)
+        .map_err(|e| e.to_string())?;
+    Ok((exe, model))
+}
+
+fn copy_bundled_whisper_to_config_dir(
+    app: &AppHandle,
+    dir: &Path,
+) -> std::result::Result<(PathBuf, PathBuf), String> {
+    let (bundled_exe, bundled_model) = bundled_whisper_paths(app)?;
+    if !bundled_exe.exists() || !bundled_model.exists() {
+        return Err("bundled whisper resources not found".to_string());
+    }
+
+    // Copy the whole bundled Release/ folder (DLLs + exe)
+    let bundled_release_dir = bundled_exe
+        .parent()
+        .ok_or_else(|| "bundled whisper-cli has no parent dir".to_string())?;
+    let out_release_dir = dir.join("Release");
+    if out_release_dir.exists() {
+        let _ = fs::remove_dir_all(&out_release_dir);
+    }
+    fs::create_dir_all(&out_release_dir).map_err(|e| e.to_string())?;
+    for entry in fs::read_dir(bundled_release_dir).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let path = entry.path();
+        if path.is_file() {
+            let file_name = path
+                .file_name()
+                .ok_or_else(|| "invalid bundled file name".to_string())?;
+            fs::copy(&path, out_release_dir.join(file_name)).map_err(|e| e.to_string())?;
+        }
+    }
+
+    let out_model = dir.join("ggml-small-q5_1.bin");
+    fs::copy(bundled_model, &out_model).map_err(|e| e.to_string())?;
+
+    let out_exe = out_release_dir.join("whisper-cli.exe");
+    if !out_exe.exists() {
+        return Err("copied Release/whisper-cli.exe not found".to_string());
+    }
+    Ok((out_exe, out_model))
 }
 
 fn download_to(url: &str, path: &Path) -> std::result::Result<(), String> {
@@ -122,20 +175,51 @@ pub fn ensure_whisper_assets(app: &AppHandle) -> Result<()> {
 
     let release_dir = dir.join("Release");
 
+    // Prefer bundled assets (no downloads) when available.
+    if !exe.exists() || !model.exists() {
+        if let Ok((out_exe, out_model)) = copy_bundled_whisper_to_config_dir(app, &dir) {
+            tracing::info!("using bundled whisper assets");
+            // Persist settings pointers so the UI doesn't require manual paths.
+            let mut s = settings_store::load(app)?;
+            s.whisper_cli_path = Some(out_exe.to_string_lossy().to_string());
+            s.whisper_model_path = Some(out_model.to_string_lossy().to_string());
+            s.stt_mode = crate::config::SttMode::WhisperCli;
+            settings_store::save(app, &s)?;
+            return Ok(());
+        }
+    }
+
     // (re)install whisper-cli + required DLLs if missing.
     if !exe.exists() {
-        fs::create_dir_all(&dir)?;
-        let zip_path = dir.join("whisper-bin-x64.zip");
-        tracing::info!("downloading whisper-cli bundle...");
-        download_to(WHISPER_BIN_URL, &zip_path).map_err(crate::error::AppError::Config)?;
-        extract_whisper_release_from_zip(&zip_path, &dir)
-            .map_err(crate::error::AppError::Config)?;
-        let _ = fs::remove_file(&zip_path);
+        // In release builds, we expect bundled resources. Avoid blocking downloads for end-users.
+        #[cfg(not(debug_assertions))]
+        {
+            tracing::warn!("whisper assets missing in release build (no downloads)");
+            return Ok(());
+        }
+        #[cfg(debug_assertions)]
+        {
+            fs::create_dir_all(&dir)?;
+            let zip_path = dir.join("whisper-bin-x64.zip");
+            tracing::info!("downloading whisper-cli bundle...");
+            download_to(WHISPER_BIN_URL, &zip_path).map_err(crate::error::AppError::Config)?;
+            extract_whisper_release_from_zip(&zip_path, &dir)
+                .map_err(crate::error::AppError::Config)?;
+            let _ = fs::remove_file(&zip_path);
+        }
     }
 
     if !model.exists() {
-        tracing::info!("downloading whisper model (small-q5_1)...");
-        download_to(WHISPER_MODEL_URL, &model).map_err(crate::error::AppError::Config)?;
+        #[cfg(not(debug_assertions))]
+        {
+            tracing::warn!("whisper model missing in release build (no downloads)");
+            return Ok(());
+        }
+        #[cfg(debug_assertions)]
+        {
+            tracing::info!("downloading whisper model (small-q5_1)...");
+            download_to(WHISPER_MODEL_URL, &model).map_err(crate::error::AppError::Config)?;
+        }
     }
 
     // If whisper-cli fails to start with missing runtime, install VC++ redist and retry.
