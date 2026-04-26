@@ -30,6 +30,18 @@ pub enum SttMode {
     WhisperCli,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum UiTheme {
+    /// Default Voxiva look (dark, accent gradients).
+    #[default]
+    Bridgemind,
+    /// Pure OLED black.
+    Black,
+    /// Light theme.
+    Light,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DictEntry {
@@ -52,6 +64,8 @@ pub struct AppSettings {
     pub schema_version: u32,
     pub dictation_language: DictationLanguage,
     pub ui_locale: String,
+    #[serde(default)]
+    pub ui_theme: UiTheme,
     #[serde(default = "default_hotkey")]
     pub push_to_talk_hotkey: String,
     #[serde(default)]
@@ -73,9 +87,10 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 2,
+            schema_version: 3,
             dictation_language: DictationLanguage::default(),
             ui_locale: "en".to_owned(),
+            ui_theme: UiTheme::default(),
             push_to_talk_hotkey: default_hotkey(),
             recording_mode: RecordingMode::default(),
             stt_mode: SttMode::default(),
@@ -98,6 +113,10 @@ impl AppSettings {
                 self.push_to_talk_hotkey = default_hotkey();
             }
             self.schema_version = 2;
+        }
+        if self.schema_version < 3 {
+            self.ui_theme = UiTheme::default();
+            self.schema_version = 3;
         }
         self
     }

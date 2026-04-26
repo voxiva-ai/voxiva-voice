@@ -4,7 +4,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { downloadWhisperAssets, getSettings, getWhisperAssetsStatus, saveSettings } from "@/lib/commands";
 import { useI18n } from "@/i18n/I18nContext";
-import type { AppSettings, DictationLanguage, DictEntry, RecordingMode } from "@/types/settings";
+import type { AppSettings, DictationLanguage, DictEntry, RecordingMode, UiTheme } from "@/types/settings";
+import { applyTheme } from "@/theme/applyTheme";
 
 const dictationLangs: { value: DictationLanguage; label: string }[] = [
   { value: "auto", label: "Auto" },
@@ -15,6 +16,12 @@ const dictationLangs: { value: DictationLanguage; label: string }[] = [
 const uiLocales = [
   { value: "en", label: "English UI" },
   { value: "ru", label: "Русский UI" },
+];
+
+const themes: { value: UiTheme; title: string; caption: string }[] = [
+  { value: "bridgemind", title: "BridgeMind", caption: "Flagship — monochrome editorial contrast." },
+  { value: "black", title: "Black", caption: "Pure OLED black — minimal, zero distraction." },
+  { value: "light", title: "Light", caption: "Clean and bright — crisp white with sharp contrast." },
 ];
 
 const hotkeyPresets: { id: string; label: string; value: string }[] = [
@@ -103,6 +110,7 @@ export function SettingsPage() {
     try {
       await saveSettings(next);
       setSettings(next);
+      applyTheme(next.uiTheme);
       void refreshI18n();
       setStatus(t("settings.saved"));
     } catch (e) {
@@ -135,6 +143,52 @@ export function SettingsPage() {
       <Card>
         <h1 style={{ margin: "0 0 0.35rem", fontSize: "1.35rem" }}>{t("settings.title")}</h1>
         <p style={{ margin: "0 0 1rem", color: "var(--vv-muted)", lineHeight: 1.5 }}>{t("settings.intro")}</p>
+
+        <div style={{ display: "grid", gap: "0.65rem", marginBottom: "1rem" }}>
+          <span style={{ fontWeight: 700 }}>Themes</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.65rem" }}>
+            {themes.map((th) => {
+              const selected = settings.uiTheme === th.value;
+              return (
+                <button
+                  key={th.value}
+                  type="button"
+                  onClick={() => {
+                    const next = { ...settings, uiTheme: th.value };
+                    setSettings(next);
+                    applyTheme(next.uiTheme);
+                  }}
+                  style={{
+                    textAlign: "left",
+                    padding: "0.8rem 0.85rem",
+                    borderRadius: 16,
+                    border: selected ? "1px solid rgba(91,140,255,0.55)" : "1px solid var(--vv-border)",
+                    background: selected ? "var(--vv-accent-soft)" : "rgba(0,0,0,0.05)",
+                    color: "var(--vv-text)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+                    <div style={{ fontWeight: 800 }}>{th.title}</div>
+                    <div
+                      aria-hidden
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 999,
+                        border: selected ? "6px solid var(--vv-accent)" : "1px solid var(--vv-border)",
+                        background: selected ? "transparent" : "rgba(0,0,0,0.08)",
+                      }}
+                    />
+                  </div>
+                  <div style={{ marginTop: "0.35rem", color: "var(--vv-muted)", fontSize: "0.82rem", lineHeight: 1.35 }}>
+                    {th.caption}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div style={{ display: "grid", gap: "0.35rem", marginBottom: "0.85rem" }}>
           <span style={{ fontWeight: 700 }}>Offline engine (Whisper)</span>

@@ -11,7 +11,8 @@ body {
   height: 100%;
   margin: 0;
   font-family: var(--vv-font);
-  background: radial-gradient(1200px 600px at 20% -10%, rgba(91, 140, 255, 0.12), transparent),
+  background:
+    radial-gradient(1200px 600px at 20% -10%, var(--vv-accent-soft), transparent),
     var(--vv-bg-deep);
   color: var(--vv-text);
 }

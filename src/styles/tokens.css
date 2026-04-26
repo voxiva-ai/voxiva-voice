@@ -18,3 +18,32 @@
   --vv-font: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
   --vv-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
 }
+
+:root[data-theme="black"] {
+  color-scheme: dark;
+  --vv-bg-deep: #000000;
+  --vv-bg: #050608;
+  --vv-surface: #0a0c10;
+  --vv-elevated: #0f1218;
+  --vv-border: rgba(255, 255, 255, 0.09);
+  --vv-text: #eef2fa;
+  --vv-muted: rgba(238, 242, 250, 0.62);
+  --vv-accent: #7c9bff;
+  --vv-accent-soft: rgba(124, 155, 255, 0.16);
+  --vv-warn: #f0c14b;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --vv-bg-deep: #f5f7fc;
+  --vv-bg: #ffffff;
+  --vv-surface: #ffffff;
+  --vv-elevated: #f2f5ff;
+  --vv-border: rgba(15, 20, 40, 0.12);
+  --vv-text: #0b1020;
+  --vv-muted: rgba(11, 16, 32, 0.64);
+  --vv-accent: #2f66ff;
+  --vv-accent-soft: rgba(47, 102, 255, 0.14);
+  --vv-warn: #b87a00;
+  --vv-shadow: 0 18px 48px rgba(10, 18, 40, 0.18);
+}
