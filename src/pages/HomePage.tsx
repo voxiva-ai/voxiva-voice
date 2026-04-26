@@ -1,43 +1,27 @@
 import { Card } from "@/components/ui/Card";
 import logoUrl from "@/assets/brand/voxiva-mark.svg";
+import lockupUrl from "@/assets/brand/voxiva-voice-lockup-horizontal.svg";
 
 export function HomePage() {
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", display: "grid", gap: "1rem" }}>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "1.1rem",
-          alignItems: "center",
-          padding: "1.1rem 1.15rem",
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.10)",
-          background:
-            "radial-gradient(1200px 380px at 30% 0%, rgba(91,140,255,0.16), transparent), linear-gradient(135deg, rgba(18,22,34,0.92), rgba(10,12,18,0.92))",
-          boxShadow: "0 22px 50px rgba(0,0,0,0.35)",
-        }}
-      >
-        <img
-          src={logoUrl}
-          alt="Voxiva Voice"
-          width={62}
-          height={62}
-          style={{
-            borderRadius: 18,
-            flex: "0 0 auto",
-            filter: "drop-shadow(0 16px 26px rgba(0,0,0,0.35))",
-          }}
-        />
-        <div style={{ flex: "1 1 340px", minWidth: 260 }}>
-          <h1 style={{ margin: "0 0 0.35rem", fontSize: "2.05rem", letterSpacing: "-0.04em" }}>
-            Stop typing. Just speak.
-          </h1>
-          <p style={{ margin: 0, color: "var(--vv-muted)", lineHeight: 1.55 }}>
-            Put the cursor in any app. Press your hotkey and speak — Voxiva Voice will type it for you.
-          </p>
+      <section className="vv-hero">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1.15rem", alignItems: "center" }}>
+          <img className="vv-heroMark" src={logoUrl} alt="Voxiva Voice" width={72} height={72} />
+          <div style={{ flex: "1 1 360px", minWidth: 280 }}>
+            <img
+              src={lockupUrl}
+              alt="Voxiva Voice"
+              height={34}
+              style={{ display: "block", opacity: 0.92, marginBottom: "0.35rem" }}
+            />
+            <h1 className="vv-glassTitle">Stop typing. Just speak.</h1>
+            <p className="vv-heroTagline">
+              Put the cursor in any app. Press your hotkey and speak — Voxiva Voice will type it for you.
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.85rem" }}>
         <Card>

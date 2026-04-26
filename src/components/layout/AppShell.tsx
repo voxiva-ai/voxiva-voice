@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useI18n } from "@/i18n/I18nContext";
 import logoUrl from "@/assets/brand/voxiva-mark.svg";
+import lockupUrl from "@/assets/brand/voxiva-voice-lockup-horizontal.svg";
 
 export function AppShell() {
   const { t } = useI18n();
@@ -30,7 +31,7 @@ export function AppShell() {
             }}
           />
           <div>
-            <div style={{ fontWeight: 900, letterSpacing: "-0.02em" }}>Voxiva Voice</div>
+            <img src={lockupUrl} alt="Voxiva Voice" height={20} style={{ display: "block", opacity: 0.95 }} />
             <div style={{ fontSize: "0.8rem", color: "var(--vv-muted)" }}>{t("nav.tagline")}</div>
           </div>
         </div>

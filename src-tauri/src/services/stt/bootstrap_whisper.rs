@@ -14,6 +14,7 @@ const WHISPER_BIN_URL: &str =
     "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-x64.zip";
 // base-q5_1 is fast but can be noticeably less accurate, especially for RU and short phrases.
 // small-q5_1 is still reasonable in size, but much more reliable for everyday dictation.
+#[cfg(debug_assertions)]
 const WHISPER_MODEL_URL: &str =
     "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
 const VC_REDIST_X64_URL: &str = "https://aka.ms/vs/17/release/vc_redist.x64.exe";

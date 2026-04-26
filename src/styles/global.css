@@ -20,6 +20,102 @@ body {
   height: 100%;
 }
 
+@keyframes vvFloat {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes vvShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.vv-hero {
+  position: relative;
+  isolation: isolate;
+  padding: 1.35rem 1.35rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(900px 460px at 22% 0%, rgba(91, 140, 255, 0.18), transparent 55%),
+    radial-gradient(760px 420px at 78% 35%, rgba(240, 193, 75, 0.09), transparent 60%),
+    linear-gradient(135deg, rgba(18, 22, 34, 0.92), rgba(10, 12, 18, 0.92));
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38);
+  overflow: hidden;
+}
+
+.vv-hero::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    120deg,
+    rgba(91, 140, 255, 0) 0%,
+    rgba(91, 140, 255, 0.28) 35%,
+    rgba(240, 193, 75, 0.18) 50%,
+    rgba(91, 140, 255, 0.22) 65%,
+    rgba(91, 140, 255, 0) 100%
+  );
+  opacity: 0.18;
+  filter: blur(26px);
+  z-index: -1;
+}
+
+.vv-heroMark {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.38));
+  animation: vvFloat 7.5s ease-in-out infinite;
+}
+
+.vv-glassTitle {
+  margin: 0;
+  font-size: clamp(2.05rem, 3.6vw, 2.55rem);
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(232, 236, 244, 0.22);
+  background-image: linear-gradient(
+    90deg,
+    rgba(232, 236, 244, 0.28),
+    rgba(91, 140, 255, 0.92),
+    rgba(240, 193, 75, 0.78),
+    rgba(91, 140, 255, 0.92),
+    rgba(232, 236, 244, 0.28)
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35));
+  animation: vvShimmer 6.5s linear infinite;
+}
+
+.vv-heroTagline {
+  margin: 0.55rem 0 0;
+  color: rgba(200, 212, 255, 0.78);
+  line-height: 1.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vv-heroMark,
+  .vv-glassTitle {
+    animation: none;
+  }
+}
+
 a {
   color: var(--vv-accent);
   text-decoration: none;

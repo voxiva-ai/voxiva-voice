@@ -48,5 +48,5 @@ jobs:
         with:
           workspaces: "./src-tauri -> target"
       - run: npm ci
-      - name: Build frontend + Tauri Windows bundle
-        run: npm run tauri build
+      - name: Build frontend + Tauri (no bundle)
+        run: npm run tauri -- build --no-bundle
