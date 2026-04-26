@@ -1,7 +1,15 @@
+<p align="center">
+  <img src="src/assets/brand/voxiva-mark.svg" width="96" height="96" alt="Voxiva Voice" />
+</p>
+
+<p align="center">
+  <a href="#ru">Русский</a> · <a href="#en">English</a>
+</p>
+
 ## Voxiva Voice
 
-<details open>
-<summary><strong>Русский</strong></summary>
+<a id="ru"></a>
+### Русский
 
 Voxiva Voice — диктовка в любое приложение: Блокнот, VS Code, браузер и т.д.
 
@@ -32,10 +40,10 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 Закрой приложения, которые используют микрофон (Discord/Zoom) или включи доступ к микрофону в Windows:
 Settings → Privacy & security → Microphone.
 
-</details>
+---
 
-<details>
-<summary><strong>English</strong></summary>
+<a id="en"></a>
+### English
 
 Voxiva Voice is a lightweight dictation app for any text field (Notepad, VS Code, browser, etc.).
 
@@ -65,9 +73,6 @@ If install fails due to permissions, run PowerShell **as Administrator** and ret
 
 Close apps using the mic (Discord/Zoom) or enable mic access in Windows Settings:
 Settings → Privacy & security → Microphone.
-
-</details>
-
 ### License
 
 MIT — see `LICENSE`.
