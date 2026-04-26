@@ -1,5 +1,10 @@
 <p align="center">
-  <img src="src/assets/brand/voxiva-hero-banner.svg" width="860" alt="Voxiva Voice — Stop typing. Just speak." />
+  <img
+    src="src/assets/brand/voxiva-hero-banner.svg"
+    width="100%"
+    style="max-width: 1100px; height: auto;"
+    alt="Voxiva Voice — Stop typing. Just speak."
+  />
 </p>
 
 <p align="center">
