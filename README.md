@@ -1,5 +1,7 @@
 ## Voxiva Voice
 
+**Русский** · <a href="#english-version">English</a>
+
 Voxiva Voice — лёгкая программа для диктовки на **русском и английском**.
 
 - Нажмите горячую клавишу и говорите
@@ -63,7 +65,7 @@ npx tauri signer generate -w "$HOME\\.tauri\\voxiva-updater.key"
 ---
 
 <details>
-<summary><strong>English version</strong></summary>
+<summary id="english-version"><strong>English version</strong></summary>
 
 Voxiva Voice is a lightweight dictation app for **English + Russian**.
 
