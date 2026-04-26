@@ -28,6 +28,14 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 
 Если установка не проходит (ошибка прав) — открой PowerShell **от имени администратора** и повтори команду.
 
+### Обновление
+
+Чтобы обновиться до последней версии, выполни **ту же самую команду** — она скачает MSI из **Latest Release** и установит поверх.
+
+### Удаление
+
+Удалить можно стандартно: Windows → **Параметры → Приложения → Установленные приложения → Voxiva Voice → Удалить**.
+
 ### Как пользоваться
 
 1) Открой приложение **Voxiva Voice** (Пуск → Voxiva Voice)  
@@ -61,6 +69,14 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 ```
 
 If install fails due to permissions, run PowerShell **as Administrator** and retry.
+
+### Update
+
+To update to the latest version, run the **same command** again — it downloads the MSI from **Latest Release** and installs over the existing app.
+
+### Uninstall
+
+Use the standard Windows flow: **Settings → Apps → Installed apps → Voxiva Voice → Uninstall**.
 
 ### How to use
 
