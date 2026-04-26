@@ -14,7 +14,6 @@ const WHISPER_BIN_URL: &str =
     "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-x64.zip";
 // base-q5_1 is fast but can be noticeably less accurate, especially for RU and short phrases.
 // small-q5_1 is still reasonable in size, but much more reliable for everyday dictation.
-#[cfg(debug_assertions)]
 const WHISPER_MODEL_URL: &str =
     "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
 const VC_REDIST_X64_URL: &str = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
@@ -192,35 +191,18 @@ pub fn ensure_whisper_assets(app: &AppHandle) -> Result<()> {
 
     // (re)install whisper-cli + required DLLs if missing.
     if !exe.exists() {
-        // In release builds, we expect bundled resources. Avoid blocking downloads for end-users.
-        #[cfg(not(debug_assertions))]
-        {
-            tracing::warn!("whisper assets missing in release build (no downloads)");
-            return Ok(());
-        }
-        #[cfg(debug_assertions)]
-        {
-            fs::create_dir_all(&dir)?;
-            let zip_path = dir.join("whisper-bin-x64.zip");
-            tracing::info!("downloading whisper-cli bundle...");
-            download_to(WHISPER_BIN_URL, &zip_path).map_err(crate::error::AppError::Config)?;
-            extract_whisper_release_from_zip(&zip_path, &dir)
-                .map_err(crate::error::AppError::Config)?;
-            let _ = fs::remove_file(&zip_path);
-        }
+        fs::create_dir_all(&dir)?;
+        let zip_path = dir.join("whisper-bin-x64.zip");
+        tracing::info!("downloading whisper-cli bundle...");
+        download_to(WHISPER_BIN_URL, &zip_path).map_err(crate::error::AppError::Config)?;
+        extract_whisper_release_from_zip(&zip_path, &dir)
+            .map_err(crate::error::AppError::Config)?;
+        let _ = fs::remove_file(&zip_path);
     }
 
     if !model.exists() {
-        #[cfg(not(debug_assertions))]
-        {
-            tracing::warn!("whisper model missing in release build (no downloads)");
-            return Ok(());
-        }
-        #[cfg(debug_assertions)]
-        {
-            tracing::info!("downloading whisper model (small-q5_1)...");
-            download_to(WHISPER_MODEL_URL, &model).map_err(crate::error::AppError::Config)?;
-        }
+        tracing::info!("downloading whisper model (small-q5_1)...");
+        download_to(WHISPER_MODEL_URL, &model).map_err(crate::error::AppError::Config)?;
     }
 
     // If whisper-cli fails to start with missing runtime, install VC++ redist and retry.

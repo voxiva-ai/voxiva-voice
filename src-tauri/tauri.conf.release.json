@@ -29,27 +29,31 @@
   "bundle": {
     "active": true,
     "createUpdaterArtifacts": true,
-    "targets": "all",
+    "targets": ["nsis"],
     "category": "Productivity",
     "shortDescription": "Voice dictation for developers",
-    "resources": [
-      "whisper/Release",
-      "whisper/ggml-small-q5_1.bin"
-    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "installMode": "perMachine",
+        "displayLanguageSelector": true,
+        "compression": "lzma"
+      }
+    }
   },
   "plugins": {
     "updater": {
       "endpoints": [
         "https://github.com/PavelCRG/Voxiva-Voice/releases/latest/download/latest.json"
       ],
-      "pubkey": "RWQKdkHZZrvkSP7p7DWOqzksjAyzMrPQfHfpLwrouCtl9ogLAerewXVb"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ4RTRCQjY2RDk0MTc2MEEKUldRS2RrSFpacnZrU1A3cDdEV09xemtzakF5ek1yUFFmSGZwTHdyb3VDdGw5b2dMQWVyZXdYVmIK"
     }
   }
 }
