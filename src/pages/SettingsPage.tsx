@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { getSettings, saveSettings } from "@/lib/commands";
+import { downloadWhisperAssets, getSettings, getWhisperAssetsStatus, saveSettings } from "@/lib/commands";
 import { useI18n } from "@/i18n/I18nContext";
 import type { AppSettings, DictationLanguage, DictEntry, RecordingMode } from "@/types/settings";
 
@@ -42,6 +42,8 @@ export function SettingsPage() {
   const { t, refresh: refreshI18n } = useI18n();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [dictJson, setDictJson] = useState("[]");
+  const [whisperStatus, setWhisperStatus] = useState<string | null>(null);
+  const [whisperError, setWhisperError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hotkeyPresetId, setHotkeyPresetId] = useState<string>("default");
@@ -59,6 +61,10 @@ export function SettingsPage() {
           const preset = hotkeyPresets.find((p) => p.value === normalized);
           setHotkeyPresetId(preset?.id ?? "custom");
           setCustomHotkey(normalized);
+        }
+        const ws = await getWhisperAssetsStatus();
+        if (!cancelled) {
+          setWhisperStatus(ws.ready ? "Ready" : `Not ready (will download to: ${ws.dir})`);
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
@@ -104,6 +110,18 @@ export function SettingsPage() {
     }
   }
 
+  async function onDownloadWhisper() {
+    setWhisperError(null);
+    setWhisperStatus("Downloading… (this can take a while)");
+    try {
+      await downloadWhisperAssets();
+      setWhisperStatus("Download started. You can keep using the app; check back in a minute.");
+    } catch (e) {
+      setWhisperError(e instanceof Error ? e.message : String(e));
+      setWhisperStatus(null);
+    }
+  }
+
   if (!settings) {
     return (
       <Card>
@@ -117,6 +135,30 @@ export function SettingsPage() {
       <Card>
         <h1 style={{ margin: "0 0 0.35rem", fontSize: "1.35rem" }}>{t("settings.title")}</h1>
         <p style={{ margin: "0 0 1rem", color: "var(--vv-muted)", lineHeight: 1.5 }}>{t("settings.intro")}</p>
+
+        <div style={{ display: "grid", gap: "0.35rem", marginBottom: "0.85rem" }}>
+          <span style={{ fontWeight: 700 }}>Offline engine (Whisper)</span>
+          <span style={{ color: "var(--vv-muted)" }}>{whisperStatus ?? "Checking…"}</span>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <Button onClick={() => void onDownloadWhisper()}>Download offline model</Button>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                void (async () => {
+                  try {
+                    const ws = await getWhisperAssetsStatus();
+                    setWhisperStatus(ws.ready ? "Ready" : `Not ready (will download to: ${ws.dir})`);
+                  } catch (e) {
+                    setWhisperError(e instanceof Error ? e.message : String(e));
+                  }
+                })()
+              }
+            >
+              Refresh status
+            </Button>
+          </div>
+          {whisperError && <span style={{ color: "#ff8c8c" }}>{whisperError}</span>}
+        </div>
 
         <label style={{ display: "grid", gap: "0.35rem", marginBottom: "0.85rem" }}>
           <span style={{ fontWeight: 700 }}>{t("settings.dictationLang")}</span>

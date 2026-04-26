@@ -3,3 +3,4 @@
 pub mod app;
 pub mod dictation;
 pub mod settings;
+pub mod stt;

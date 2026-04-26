@@ -244,3 +244,24 @@ pub fn ensure_whisper_assets(app: &AppHandle) -> Result<()> {
 
     Ok(())
 }
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WhisperAssetsStatus {
+    pub dir: String,
+    pub cli_present: bool,
+    pub model_present: bool,
+    pub ready: bool,
+}
+
+pub fn whisper_assets_status(app: &AppHandle) -> Result<WhisperAssetsStatus> {
+    let (dir, exe, model) = whisper_paths(app)?;
+    let cli_present = exe.exists();
+    let model_present = model.exists();
+    Ok(WhisperAssetsStatus {
+        dir: dir.to_string_lossy().to_string(),
+        cli_present,
+        model_present,
+        ready: cli_present && model_present,
+    })
+}

@@ -89,16 +89,7 @@ pub fn init(handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     create_hud_window(handle)?;
     install_tray(handle)?;
     register_hotkey_inner(handle)?;
-    // Whisper bootstrap can be IO-heavy. Run it in the background to keep the UI responsive.
-    // In release builds we expect assets to be bundled, so this should be quick.
-    {
-        let h = handle.clone();
-        std::thread::spawn(move || {
-            if let Err(e) = crate::services::stt::bootstrap_whisper::ensure_whisper_assets(&h) {
-                tracing::warn!("whisper bootstrap failed (falling back): {e:?}");
-            }
-        });
-    }
+    // Whisper assets are optional and can be large; we do not auto-download on startup.
     #[cfg(windows)]
     crate::services::focus::start_focus_watcher(handle.clone());
     Ok(())

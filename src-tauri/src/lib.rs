@@ -29,6 +29,8 @@ pub fn run() {
             commands::app::get_app_metadata,
             commands::settings::get_settings,
             commands::settings::save_settings,
+            commands::stt::get_whisper_assets_status,
+            commands::stt::download_whisper_assets,
             commands::dictation::hud_ptt_pointer_down,
             commands::dictation::hud_ptt_pointer_up,
             commands::dictation::hud_toggle_click,
