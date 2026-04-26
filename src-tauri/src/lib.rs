@@ -35,6 +35,17 @@ pub fn run() {
             if window.label() != "main" {
                 return;
             }
+            // When user closes the main window, we want to exit fully (not just hide to tray)
+            // and ensure the HUD is not left visible.
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                if let Some(hud) = window.app_handle().get_webview_window("hud") {
+                    let _ = hud.hide();
+                    let _ = hud.close();
+                }
+                window.app_handle().exit(0);
+                return;
+            }
             if matches!(
                 event,
                 WindowEvent::Resized(_) | WindowEvent::Focused(_) | WindowEvent::Moved(_)
