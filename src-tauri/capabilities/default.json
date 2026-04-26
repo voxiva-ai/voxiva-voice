@@ -16,6 +16,8 @@
     "core:webview:allow-create-webview-window",
     "core:event:allow-listen",
     "core:event:allow-emit",
-    "core:event:allow-emit-to"
+    "core:event:allow-emit-to",
+    "updater:allow-check",
+    "updater:allow-download-and-install"
   ]
 }

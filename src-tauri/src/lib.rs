@@ -11,6 +11,7 @@ mod settings_store;
 
 use tauri::Manager;
 use tauri::WindowEvent;
+use tauri_plugin_updater::UpdaterExt;
 
 use services::dictation::{DictationGate, VoiceActivationGate};
 
@@ -21,6 +22,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(DictationGate::default())
         .manage(VoiceActivationGate::default())
         .invoke_handler(tauri::generate_handler![
@@ -67,6 +69,43 @@ pub fn run() {
                 tracing::error!("bootstrap failed: {e:?}");
             } else {
                 tracing::info!("voxiva voice ready (tray + HUD + global shortcut)");
+            }
+
+            // Background auto-update (no user commands).
+            // If an update is available, download + install it, then exit.
+            #[cfg(desktop)]
+            {
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    let updater = match handle.updater_builder().build() {
+                        Ok(u) => u,
+                        Err(e) => {
+                            tracing::warn!("updater builder failed: {e}");
+                            return;
+                        }
+                    };
+
+                    let update = match updater.check().await {
+                        Ok(u) => u,
+                        Err(e) => {
+                            tracing::warn!("update check failed: {e}");
+                            return;
+                        }
+                    };
+
+                    let Some(update) = update else { return };
+                    tracing::info!("update found: {}", update.version);
+
+                    if let Err(e) = update
+                        .download_and_install(|_chunk, _total| {}, || {})
+                        .await
+                    {
+                        tracing::warn!("update install failed: {e}");
+                        return;
+                    }
+
+                    handle.exit(0);
+                });
             }
             Ok(())
         })

@@ -38,6 +38,27 @@ $env:VOXIVA_REPO="owner/name"; irm https://raw.githubusercontent.com/PavelCRG/Vo
 - Мини‑HUD при свёрнутом окне
 - Индикатор громкости в HUD
 - Voice activation (без хоткея) — включается из трея: **Toggle voice activation**
+- Авто‑обновления: приложение само скачивает и ставит новые версии из GitHub Releases
+
+### Авто‑обновления (для владельца репозитория)
+
+Чтобы авто‑обновления работали у пользователей, нужно один раз настроить подпись обновлений:
+
+1) Сгенерировать ключи (локально):
+
+```powershell
+npx tauri signer generate -w "$HOME\\.tauri\\voxiva-updater.key"
+```
+
+2) Взять публичный ключ из `voxiva-updater.key.pub` и вставить в:
+`src-tauri/tauri.conf.json` → `plugins.updater.pubkey`
+
+3) Добавить Secrets в GitHub repo:
+- `TAURI_SIGNING_PRIVATE_KEY` (содержимое `voxiva-updater.key`)
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (пароль, который вводили при генерации)
+
+4) Публикация релиза:
+- Создайте git tag `vX.Y.Z` и push — GitHub Actions сам соберёт релиз, приложит `latest.json` и установщики.
 
 ---
 
@@ -82,6 +103,27 @@ $env:VOXIVA_REPO="owner/name"; irm https://raw.githubusercontent.com/PavelCRG/Vo
 - Mini HUD while the app is minimized
 - Live mic level meter in the HUD
 - Voice activation (no hotkey) — tray menu: **Toggle voice activation**
+- Auto-updates: the app downloads and installs new versions from GitHub Releases
+
+### Auto-updates (repo owner)
+
+To enable auto-updates for users, configure update signing once:
+
+1) Generate keys (locally):
+
+```powershell
+npx tauri signer generate -w "$HOME\\.tauri\\voxiva-updater.key"
+```
+
+2) Copy the public key from `voxiva-updater.key.pub` into:
+`src-tauri/tauri.conf.json` → `plugins.updater.pubkey`
+
+3) Add GitHub repo secrets:
+- `TAURI_SIGNING_PRIVATE_KEY` (contents of `voxiva-updater.key`)
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (the password you entered)
+
+4) Publishing:
+- Push a git tag `vX.Y.Z` — GitHub Actions will build and publish a release with `latest.json` + installers.
 
 </details>
 
