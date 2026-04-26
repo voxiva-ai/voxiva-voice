@@ -7,3 +7,5 @@ dist-ssr
 src-tauri/target
 src-tauri/gen
 src-tauri/whisper
+src-tauri/.tauri-signing.key
+src-tauri/.tauri-signing.key.pub
