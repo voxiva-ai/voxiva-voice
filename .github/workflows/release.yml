@@ -27,6 +27,10 @@ jobs:
 
       - run: npm ci
 
+      - name: Prepare bundled Whisper assets
+        shell: pwsh
+        run: .\scripts\prepare-whisper-assets.ps1
+
       - name: Build + publish Tauri release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -34,6 +38,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
+          args: --config src-tauri/tauri.conf.release.json
           tagName: ${{ github.ref_name }}
           releaseName: "Voxiva Voice ${{ github.ref_name }}"
           releaseBody: "Auto-generated release."
