@@ -71,13 +71,13 @@ pub fn create_hud_window(app: &AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     let _hud = WebviewWindowBuilder::new(app, "hud", url)
         .title("Voxiva HUD")
-        .transparent(true)
+        .transparent(false)
         .decorations(false)
         .always_on_top(true)
         .focusable(false)
         .skip_taskbar(true)
         .position(32.0, 32.0)
-        .inner_size(268.0, 44.0)
+        .inner_size(232.0, 36.0)
         .visible(false)
         .resizable(false)
         .build()?;

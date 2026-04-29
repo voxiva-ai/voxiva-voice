@@ -10,6 +10,7 @@ html,
 body {
   height: 100%;
   margin: 0;
+  overflow: hidden;
   font-family: var(--vv-font);
   background:
     radial-gradient(1200px 600px at 20% -10%, var(--vv-accent-soft), transparent),
@@ -19,6 +20,149 @@ body {
 
 #root {
   height: 100%;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--vv-bg) 78%, transparent);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--vv-text) 24%, transparent);
+  border: 3px solid color-mix(in srgb, var(--vv-bg) 92%, transparent);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--vv-text) 34%, transparent);
+}
+
+.vv-appShell {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.vv-sidebar {
+  width: 244px;
+  flex: 0 0 244px;
+  padding: 1rem 0.9rem;
+  border-right: 1px solid var(--vv-border);
+  background: var(--vv-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  overflow: hidden;
+}
+
+.vv-sidebarBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.22rem 0.25rem 0.1rem;
+}
+
+.vv-sidebarLogo {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25));
+}
+
+.vv-sidebarBrandText {
+  min-width: 0;
+}
+
+.vv-sidebarTitle {
+  line-height: 1.1;
+  font-size: 0.95rem;
+  font-weight: 820;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.vv-sidebarTitle span {
+  color: var(--vv-accent);
+}
+
+.vv-sidebarTagline {
+  margin-top: 0.12rem;
+  max-width: 160px;
+  font-size: 0.78rem;
+  color: var(--vv-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vv-sidebarNav {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.vv-navLink {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 0.62rem;
+  padding: 0 0.72rem;
+  border-radius: 13px;
+  border: 1px solid transparent;
+  color: color-mix(in srgb, var(--vv-text) 76%, transparent);
+  font-size: 0.94rem;
+  font-weight: 720;
+  line-height: 1;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.vv-navLink:hover {
+  text-decoration: none;
+  color: var(--vv-text);
+  background: color-mix(in srgb, var(--vv-text) 5%, transparent);
+}
+
+.vv-navLink.is-active {
+  color: var(--vv-text);
+  background: color-mix(in srgb, var(--vv-accent-soft) 86%, transparent);
+  border-color: color-mix(in srgb, var(--vv-accent) 34%, transparent);
+}
+
+.vv-navIcon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: grid;
+  place-items: center;
+  color: currentColor;
+  opacity: 0.86;
+}
+
+.vv-navIcon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.vv-sidebarSpacer {
+  margin-top: auto;
+}
+
+.vv-mainPane {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 1.2rem 1.35rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--vv-bg-deep) 86%, transparent), var(--vv-bg-deep));
 }
 
 @keyframes vvFloat {
@@ -49,9 +193,9 @@ body {
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background:
-    radial-gradient(900px 460px at 22% 0%, rgba(91, 140, 255, 0.18), transparent 55%),
-    radial-gradient(760px 420px at 78% 35%, rgba(240, 193, 75, 0.09), transparent 60%),
-    linear-gradient(135deg, rgba(18, 22, 34, 0.92), rgba(10, 12, 18, 0.92));
+    radial-gradient(900px 460px at 22% 0%, color-mix(in srgb, var(--vv-accent) 16%, transparent), transparent 55%),
+    radial-gradient(760px 420px at 78% 35%, color-mix(in srgb, var(--vv-warn) 10%, transparent), transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--vv-elevated) 88%, transparent), color-mix(in srgb, var(--vv-bg) 96%, transparent));
   box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38);
   overflow: hidden;
 }
@@ -62,11 +206,11 @@ body {
   inset: -2px;
   background: linear-gradient(
     120deg,
-    rgba(91, 140, 255, 0) 0%,
-    rgba(91, 140, 255, 0.28) 35%,
-    rgba(240, 193, 75, 0.18) 50%,
-    rgba(91, 140, 255, 0.22) 65%,
-    rgba(91, 140, 255, 0) 100%
+    color-mix(in srgb, var(--vv-accent) 0%, transparent) 0%,
+    color-mix(in srgb, var(--vv-accent) 28%, transparent) 35%,
+    color-mix(in srgb, var(--vv-warn) 18%, transparent) 50%,
+    color-mix(in srgb, var(--vv-accent) 22%, transparent) 65%,
+    color-mix(in srgb, var(--vv-accent) 0%, transparent) 100%
   );
   opacity: 0.18;
   filter: blur(26px);
@@ -91,11 +235,11 @@ body {
   -webkit-text-stroke: 1px rgba(232, 236, 244, 0.22);
   background-image: linear-gradient(
     90deg,
-    rgba(232, 236, 244, 0.28),
-    rgba(91, 140, 255, 0.92),
-    rgba(240, 193, 75, 0.78),
-    rgba(91, 140, 255, 0.92),
-    rgba(232, 236, 244, 0.28)
+    color-mix(in srgb, var(--vv-text) 28%, transparent),
+    color-mix(in srgb, var(--vv-accent) 92%, transparent),
+    color-mix(in srgb, var(--vv-warn) 78%, transparent),
+    color-mix(in srgb, var(--vv-accent) 92%, transparent),
+    color-mix(in srgb, var(--vv-text) 28%, transparent)
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -106,13 +250,163 @@ body {
 
 .vv-heroTagline {
   margin: 0.55rem 0 0;
-  color: rgba(200, 212, 255, 0.78);
+  color: var(--vv-muted);
   line-height: 1.55;
+}
+
+.vv-onboard {
+  position: relative;
+  isolation: isolate;
+}
+
+.vv-bubbles {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(820px 420px at 18% 18%, color-mix(in srgb, var(--vv-accent) 22%, transparent), transparent 58%),
+    radial-gradient(720px 380px at 82% 32%, color-mix(in srgb, var(--vv-warn) 18%, transparent), transparent 60%),
+    radial-gradient(780px 520px at 55% 92%, color-mix(in srgb, var(--vv-accent) 12%, transparent), transparent 62%);
+  filter: blur(0.5px);
+}
+
+.vv-bubbles::before,
+.vv-bubbles::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--vv-accent) 18%, transparent) 0 18px, transparent 19px),
+    radial-gradient(circle at 74% 22%, color-mix(in srgb, var(--vv-warn) 14%, transparent) 0 14px, transparent 15px),
+    radial-gradient(circle at 62% 78%, color-mix(in srgb, var(--vv-accent) 12%, transparent) 0 16px, transparent 17px),
+    radial-gradient(circle at 28% 72%, color-mix(in srgb, var(--vv-warn) 10%, transparent) 0 12px, transparent 13px);
+  opacity: 0.55;
+  transform: translate3d(0, 0, 0);
+  animation: vvBubbleDrift 18s ease-in-out infinite;
+}
+
+.vv-bubbles::after {
+  opacity: 0.35;
+  filter: blur(1.6px);
+  animation-duration: 26s;
+}
+
+@keyframes vvBubbleDrift {
+  0% {
+    transform: translate3d(-1.5%, -1.5%, 0);
+  }
+  50% {
+    transform: translate3d(1.5%, 1.2%, 0);
+  }
+  100% {
+    transform: translate3d(-1.5%, -1.5%, 0);
+  }
+}
+
+.vv-brandTitle {
+  font-size: clamp(2.1rem, 3.4vw, 2.55rem);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: transparent;
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--vv-text) 55%, transparent),
+    var(--vv-accent),
+    color-mix(in srgb, var(--vv-warn) 86%, transparent),
+    var(--vv-accent),
+    color-mix(in srgb, var(--vv-text) 55%, transparent)
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 10px 26px color-mix(in srgb, var(--vv-bg-deep) 70%, transparent));
+  animation: vvShimmer 7.5s linear infinite;
+}
+
+.vv-brandTitle > span {
+  color: transparent;
+}
+
+.vv-welcomePanel {
+  width: min(520px, 100%);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.vv-welcomeBrand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.vv-welcomeLogo {
+  width: 70px;
+  height: 70px;
+  border-radius: 20px;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.3));
+}
+
+.vv-welcomeLine {
+  width: 150px;
+  height: 1px;
+  margin: 1.25rem 0 2.1rem;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--vv-accent) 52%, transparent), transparent);
+}
+
+.vv-welcomeHeadline {
+  font-size: clamp(1.28rem, 2vw, 1.55rem);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.vv-welcomeCopy {
+  margin-top: 0.85rem;
+  max-width: 440px;
+  color: var(--vv-muted);
+  line-height: 1.55;
+}
+
+.vv-welcomeNote {
+  margin-top: 0.85rem;
+  color: var(--vv-muted);
+  font-size: 0.82rem;
+}
+
+.vv-welcomeBadge {
+  margin-top: 4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.48rem 0.9rem;
+  border: 1px solid var(--vv-border);
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--vv-muted) 78%, transparent);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  font-weight: 800;
+  background: color-mix(in srgb, var(--vv-elevated) 52%, transparent);
+}
+
+.vv-welcomeBadge span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--vv-accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--vv-accent) 70%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .vv-heroMark,
-  .vv-glassTitle {
+  .vv-glassTitle,
+  .vv-bubbles::before,
+  .vv-bubbles::after,
+  .vv-brandTitle {
     animation: none;
   }
 }
@@ -130,4 +424,307 @@ button,
 select,
 input {
   font: inherit;
+}
+
+/* --- UI kit --- */
+.vv-sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.vv-sectionTitle {
+  font-size: 1.04rem;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.vv-sectionSubtitle {
+  margin-top: 0.25rem;
+  color: var(--vv-muted);
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.vv-sectionRight {
+  flex: 0 0 auto;
+}
+
+.vv-sectionBody {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.vv-grid2 {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.vv-settingsPage {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.95rem;
+  padding-bottom: 1.2rem;
+}
+
+.vv-settingsHero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.05rem 1.15rem;
+  border: 1px solid var(--vv-border);
+  border-radius: var(--vv-radius-lg);
+  background:
+    radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--vv-accent) 16%, transparent), transparent 34%),
+    color-mix(in srgb, var(--vv-elevated) 86%, transparent);
+  box-shadow: var(--vv-shadow);
+}
+
+.vv-settingsKicker {
+  color: var(--vv-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 780;
+}
+
+.vv-settingsHeroTitle {
+  margin-top: 0.25rem;
+  font-size: clamp(1.3rem, 2.3vw, 1.8rem);
+  font-weight: 820;
+  letter-spacing: -0.045em;
+}
+
+.vv-settingsHeroText {
+  margin-top: 0.35rem;
+  max-width: 620px;
+  color: var(--vv-muted);
+  line-height: 1.5;
+}
+
+.vv-settingsActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.vv-settingsStatus {
+  color: var(--vv-muted);
+  font-size: 0.9rem;
+}
+
+.vv-settingsError {
+  color: #ff8c8c;
+  font-size: 0.9rem;
+}
+
+.vv-settingsLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.95rem;
+  align-items: start;
+}
+
+.vv-settingsColumn {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.vv-settingsField {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.vv-settingsLabel {
+  font-weight: 760;
+  letter-spacing: -0.01em;
+}
+
+.vv-settingsHint,
+.vv-choiceCaption {
+  color: var(--vv-muted);
+  font-size: 0.86rem;
+  line-height: 1.42;
+}
+
+.vv-choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.vv-choiceGrid.is-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.vv-choiceCard {
+  width: 100%;
+  min-height: 104px;
+  text-align: left;
+  display: grid;
+  align-content: space-between;
+  gap: 0.7rem;
+  padding: 0.85rem;
+  border-radius: 16px;
+  border: 1px solid var(--vv-border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--vv-elevated) 94%, transparent), color-mix(in srgb, var(--vv-surface) 92%, transparent));
+  color: var(--vv-text);
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+
+.vv-choiceCard:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--vv-accent) 34%, var(--vv-border));
+}
+
+.vv-choiceCard.is-selected {
+  border-color: color-mix(in srgb, var(--vv-accent) 62%, var(--vv-border));
+  background:
+    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--vv-accent) 18%, transparent), transparent 42%),
+    color-mix(in srgb, var(--vv-accent-soft) 72%, var(--vv-elevated));
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--vv-accent) 12%, transparent);
+}
+
+.vv-choiceTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.vv-choiceTitle {
+  display: block;
+  font-weight: 800;
+  font-size: 0.96rem;
+}
+
+.vv-choiceDot {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid var(--vv-border);
+  background: color-mix(in srgb, var(--vv-text) 5%, transparent);
+}
+
+.vv-choiceCard.is-selected .vv-choiceDot {
+  border: 6px solid var(--vv-accent);
+  background: transparent;
+}
+
+.vv-pillRow {
+  display: flex;
+  gap: 0.42rem;
+  flex-wrap: wrap;
+}
+
+.vv-miniPill {
+  padding: 0.2rem 0.48rem;
+  border-radius: 999px;
+  color: var(--vv-muted);
+  background: color-mix(in srgb, var(--vv-text) 6%, transparent);
+  font-size: 0.72rem;
+  font-weight: 720;
+}
+
+.vv-modelCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--vv-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--vv-surface) 78%, transparent);
+}
+
+@media (max-width: 920px) {
+  .vv-grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .vv-settingsHero,
+  .vv-settingsActions {
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+  }
+
+  .vv-settingsLayout,
+  .vv-choiceGrid,
+  .vv-choiceGrid.is-three {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vv-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: var(--vv-radius-lg);
+  background: color-mix(in srgb, var(--vv-elevated) 78%, transparent);
+  border: 1px solid var(--vv-border);
+}
+
+.vv-toggleLabel {
+  font-weight: 800;
+}
+
+.vv-toggleDesc {
+  margin-top: 0.25rem;
+  color: var(--vv-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.vv-toggleInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vv-toggleTrack {
+  width: 46px;
+  height: 28px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vv-text) 10%, transparent);
+  border: 1px solid var(--vv-border);
+  position: relative;
+  flex: 0 0 auto;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.vv-toggleTrack::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--vv-text);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease;
+}
+
+.vv-toggle:has(.vv-toggleInput:checked) .vv-toggleTrack {
+  background: color-mix(in srgb, var(--vv-accent) 40%, transparent);
+  border-color: color-mix(in srgb, var(--vv-accent) 40%, var(--vv-border));
+}
+
+.vv-toggle:has(.vv-toggleInput:checked) .vv-toggleTrack::after {
+  transform: translateX(18px);
 }

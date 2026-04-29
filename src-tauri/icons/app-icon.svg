@@ -1,26 +1,46 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <title>Voxiva app icon</title>
-  <rect width="1024" height="1024" rx="224" fill="#0B1020"/>
-  <circle cx="512" cy="512" r="372" fill="#2D5BFF" opacity="0.18"/>
-  <g transform="translate(112 112) scale(3.125)">
-    
-  <title>Voxiva mark variation A - primary</title>
+  <title>Voxiva Voice app icon</title>
   <defs>
-    <filter id="app-icon-shadow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#050816" flood-opacity="0.28"/>
-    </filter>
-    <linearGradient id="app-icon-blue" x1="48" y1="26" x2="210" y2="228" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#5B8CFF"/>
+    <linearGradient id="voice-app-bg" x1="128" y1="112" x2="896" y2="912" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#05070D"/>
+    </linearGradient>
+    <linearGradient id="voice-app-ring" x1="172" y1="156" x2="852" y2="868" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6BE3FF"/>
       <stop offset="1" stop-color="#2D5BFF"/>
     </linearGradient>
-    <linearGradient id="app-icon-gold" x1="76" y1="92" x2="180" y2="168" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFE08A"/>
-      <stop offset="1" stop-color="#F0C14B"/>
+    <linearGradient id="voice-app-left" x1="286" y1="268" x2="510" y2="748" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE995"/>
+      <stop offset="0.52" stop-color="#F0C14B"/>
+      <stop offset="1" stop-color="#F49A32"/>
     </linearGradient>
+    <linearGradient id="voice-app-right" x1="738" y1="268" x2="514" y2="748" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#79E5FF"/>
+      <stop offset="0.48" stop-color="#4D9DFF"/>
+      <stop offset="1" stop-color="#2D5BFF"/>
+    </linearGradient>
+    <linearGradient id="voice-app-mic" x1="466" y1="352" x2="558" y2="570" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8DC"/>
+      <stop offset="1" stop-color="#DDE9FF"/>
+    </linearGradient>
+    <filter id="voice-app-glow" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
   </defs>
-  <path d="M128 20C164 20 202 37 222 68C242 99 239 151 219 186C199 221 164 236 128 236C92 236 57 221 37 186C17 151 14 99 34 68C54 37 92 20 128 20Z" fill="#0B1020" stroke="url(#app-icon-blue)" stroke-width="14" opacity="0.96" filter="url(#app-icon-shadow)"/>
-  <path d="M128 20C164 20 202 37 222 68C242 99 239 151 219 186C199 221 164 236 128 236C92 236 57 221 37 186C17 151 14 99 34 68C54 37 92 20 128 20Z" fill="none" stroke="#2D5BFF" stroke-width="5" opacity="0.34"/>
-  <path d="M70 94C88 137 104 164 128 164C152 164 168 137 186 94" fill="none" stroke="url(#app-icon-gold)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M70 94C88 137 104 164 128 164C152 164 168 137 186 94" fill="none" stroke="#FFE08A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
-  </g>
+  <rect width="1024" height="1024" rx="232" fill="url(#voice-app-bg)"/>
+  <circle cx="512" cy="512" r="384" fill="#05070D"/>
+  <circle cx="512" cy="512" r="384" fill="none" stroke="url(#voice-app-ring)" stroke-width="34" opacity="0.78"/>
+  <path d="M300 290C332 290 360 308 374 336L512 620L452 764L248 378C228 338 256 290 300 290Z" fill="url(#voice-app-left)" opacity="0.34" filter="url(#voice-app-glow)"/>
+  <path d="M724 290C692 290 664 308 650 336L512 620L572 764L776 378C796 338 768 290 724 290Z" fill="url(#voice-app-right)" opacity="0.34" filter="url(#voice-app-glow)"/>
+  <path d="M300 290C332 290 360 308 374 336L512 620L650 336C664 308 692 290 724 290C768 290 796 338 776 378L572 764C560 788 536 804 512 804C488 804 464 788 452 764L248 378C228 338 256 290 300 290Z" fill="#0B1020"/>
+  <path d="M300 290C332 290 360 308 374 336L512 620L452 764L248 378C228 338 256 290 300 290Z" fill="url(#voice-app-left)"/>
+  <path d="M724 290C692 290 664 308 650 336L512 620L572 764L776 378C796 338 768 290 724 290Z" fill="url(#voice-app-right)"/>
+  <rect x="440" y="336" width="144" height="256" rx="72" fill="#05070D"/>
+  <rect x="464" y="360" width="96" height="208" rx="48" fill="url(#voice-app-mic)" opacity="0.94"/>
+  <path d="M412 492C412 552 456 604 512 604C568 604 612 552 612 492" stroke="#05070D" stroke-width="36" stroke-linecap="round"/>
+  <path d="M412 492C412 552 456 604 512 604C568 604 612 552 612 492" stroke="url(#voice-app-mic)" stroke-width="20" stroke-linecap="round" opacity="0.9"/>
+  <path d="M512 604V668" stroke="#05070D" stroke-width="36" stroke-linecap="round"/>
+  <path d="M512 604V668" stroke="url(#voice-app-mic)" stroke-width="20" stroke-linecap="round" opacity="0.9"/>
+  <path d="M452 668H572" stroke="#05070D" stroke-width="36" stroke-linecap="round"/>
+  <path d="M452 668H572" stroke="url(#voice-app-mic)" stroke-width="20" stroke-linecap="round" opacity="0.9"/>
 </svg>

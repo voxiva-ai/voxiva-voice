@@ -7,6 +7,12 @@ export type RecordingMode = "pushToTalk" | "toggle";
 /** Matches Rust `SttMode`. */
 export type SttMode = "localStub" | "whisperCli";
 
+/** Matches Rust `PasteMethod`. */
+export type PasteMethod = "ctrlV" | "shiftInsert" | "ctrlShiftV";
+
+/** Matches Rust `HudMode`. */
+export type HudMode = "full" | "iconOnly";
+
 /** Matches Rust `UiTheme` (`serde(rename_all = "lowercase")`). */
 export type UiTheme = "bridgemind" | "black" | "light";
 
@@ -28,4 +34,7 @@ export interface AppSettings {
   privacyLocalOnly: boolean;
   dictReplacements: DictEntry[];
   voiceActivationEnabled: boolean;
+  pasteMethod: PasteMethod;
+  onboardingCompleted: boolean;
+  hudMode: HudMode;
 }

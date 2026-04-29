@@ -8,7 +8,7 @@ export function Card({ children }: PropsWithChildren) {
         border: "1px solid var(--vv-border)",
         borderRadius: "var(--vv-radius-lg)",
         boxShadow: "var(--vv-shadow)",
-        padding: "1.25rem 1.35rem",
+        padding: "1.1rem 1.2rem",
       }}
     >
       {children}

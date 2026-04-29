@@ -28,9 +28,9 @@
   --vv-border: rgba(255, 255, 255, 0.09);
   --vv-text: #eef2fa;
   --vv-muted: rgba(238, 242, 250, 0.62);
-  --vv-accent: #7c9bff;
-  --vv-accent-soft: rgba(124, 155, 255, 0.16);
-  --vv-warn: #f0c14b;
+  --vv-accent: #f5f7fb;
+  --vv-accent-soft: rgba(255, 255, 255, 0.11);
+  --vv-warn: #b8beca;
 }
 
 :root[data-theme="light"] {

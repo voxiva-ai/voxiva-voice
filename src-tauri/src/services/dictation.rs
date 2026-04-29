@@ -148,10 +148,11 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
 
         let text = stt::transcribe(&audio, &settings_th);
         let text = dictionary::apply(&text, &settings_th.dict_replacements);
+        let paste_method = settings_th.paste_method;
 
         let h = app_th.clone();
         if let Err(e) = app_th.run_on_main_thread(move || {
-            if let Err(e) = injection::paste_text(&text) {
+            if let Err(e) = injection::paste_text_with_method(&text, paste_method) {
                 tracing::warn!("paste: {e}");
             }
             let idle_target = focus::foreground_window_title();
@@ -271,7 +272,7 @@ pub fn start_voice_activation_loop(app: AppHandle) {
 
         let text = stt::transcribe(&captured, &settings);
         let text = dictionary::apply(&text, &settings.dict_replacements);
-        let _ = injection::paste_text(&text);
+        let _ = injection::paste_text_with_method(&text, settings.paste_method);
     });
 }
 

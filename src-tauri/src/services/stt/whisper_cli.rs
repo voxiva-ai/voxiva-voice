@@ -152,9 +152,13 @@ pub fn transcribe_whisper_cli(
     // - auto threads based on CPU count
     cmd.args(["-nt", "-np"]);
     cmd.args(["-bs", "5", "-bo", "5"]);
+    // Cap threads to reduce CPU spikes / laptop fan noise.
+    // Whisper scales well, but saturating all cores is a bad default UX for a small dictation app.
     let threads = std::thread::available_parallelism()
-        .map(|n| n.get().to_string())
-        .unwrap_or_else(|_| "4".to_string());
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .clamp(1, 4)
+        .to_string();
     cmd.args(["-t", threads.as_str()]);
 
     if let Some(l) = whisper_lang_arg_with_locale(settings) {

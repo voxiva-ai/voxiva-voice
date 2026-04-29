@@ -42,6 +42,28 @@ pub enum UiTheme {
     Light,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum PasteMethod {
+    /// Standard paste (most apps).
+    #[default]
+    CtrlV,
+    /// Legacy Win32 paste (works in some apps where Ctrl+V is intercepted).
+    ShiftInsert,
+    /// Paste-plain in some editors (VS Code / JetBrains when configured).
+    CtrlShiftV,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum HudMode {
+    /// Logo + voice wave + mic button.
+    #[default]
+    Full,
+    /// Logo + mic button only.
+    IconOnly,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DictEntry {
@@ -82,12 +104,18 @@ pub struct AppSettings {
     pub dict_replacements: Vec<DictEntry>,
     #[serde(default)]
     pub voice_activation_enabled: bool,
+    #[serde(default)]
+    pub paste_method: PasteMethod,
+    #[serde(default)]
+    pub onboarding_completed: bool,
+    #[serde(default)]
+    pub hud_mode: HudMode,
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 3,
+            schema_version: 6,
             dictation_language: DictationLanguage::default(),
             ui_locale: "en".to_owned(),
             ui_theme: UiTheme::default(),
@@ -99,6 +127,9 @@ impl Default for AppSettings {
             privacy_local_only: default_privacy(),
             dict_replacements: Vec::new(),
             voice_activation_enabled: false,
+            paste_method: PasteMethod::default(),
+            onboarding_completed: false,
+            hud_mode: HudMode::default(),
         }
     }
 }
@@ -117,6 +148,18 @@ impl AppSettings {
         if self.schema_version < 3 {
             self.ui_theme = UiTheme::default();
             self.schema_version = 3;
+        }
+        if self.schema_version < 4 {
+            self.paste_method = PasteMethod::default();
+            self.schema_version = 4;
+        }
+        if self.schema_version < 5 {
+            self.onboarding_completed = false;
+            self.schema_version = 5;
+        }
+        if self.schema_version < 6 {
+            self.hud_mode = HudMode::default();
+            self.schema_version = 6;
         }
         self
     }

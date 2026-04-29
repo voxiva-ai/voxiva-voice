@@ -2,21 +2,17 @@
 
 use arboard::Clipboard;
 use enigo::{Direction, Enigo, Key, Keyboard, Settings};
-use std::thread;
-use std::time::Duration;
 
-pub fn paste_text(text: &str) -> Result<(), String> {
+pub fn paste_text_with_method(text: &str, method: crate::config::PasteMethod) -> Result<(), String> {
     let mut clip = Clipboard::new().map_err(|e| e.to_string())?;
     clip.set_text(text).map_err(|e| e.to_string())?;
 
     let mut enigo = Enigo::new(&Settings::default()).map_err(|e| e.to_string())?;
 
-    // Some apps (especially editors) can ignore a single paste keystroke depending on
-    // focus timing, keyboard hooks, or IME state. Try a couple of common paste combos.
+    // We intentionally send a *single* paste combo.
     //
-    // 1) Ctrl+V (standard)
-    // 2) Shift+Insert (Win32 legacy paste; often works where Ctrl+V is intercepted)
-    // 3) Ctrl+Shift+V (paste-plain in some apps; harmless if unsupported)
+    // Previous versions tried multiple paste combos as fallbacks, but many apps accept more than
+    // one of them, which results in duplicated text (user says one phrase, app pastes it 2–3x).
     fn combo(enigo: &mut Enigo, mods: &[Key], key: Key) -> Result<(), String> {
         for m in mods {
             enigo.key(*m, Direction::Press).map_err(|e| e.to_string())?;
@@ -32,15 +28,13 @@ pub fn paste_text(text: &str) -> Result<(), String> {
         Ok(())
     }
 
-    combo(&mut enigo, &[Key::Control], Key::Unicode('v'))?;
-    thread::sleep(Duration::from_millis(25));
-
-    // If Ctrl+V didn't work (Cursor sometimes), this often will.
-    let _ = combo(&mut enigo, &[Key::Shift], Key::Insert);
-    thread::sleep(Duration::from_millis(25));
-
-    // Optional extra fallback for apps that bind paste differently.
-    let _ = combo(&mut enigo, &[Key::Control, Key::Shift], Key::Unicode('v'));
+    match method {
+        crate::config::PasteMethod::CtrlV => combo(&mut enigo, &[Key::Control], Key::Unicode('v'))?,
+        crate::config::PasteMethod::ShiftInsert => combo(&mut enigo, &[Key::Shift], Key::Insert)?,
+        crate::config::PasteMethod::CtrlShiftV => combo(&mut enigo, &[Key::Control, Key::Shift], Key::Unicode('v'))?,
+    }
 
     Ok(())
 }
+
+// Keep `paste_text_with_method` as the single implementation to avoid duplicated paste logic.
