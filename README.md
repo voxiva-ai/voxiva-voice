@@ -28,9 +28,13 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 
 Если установка не проходит (ошибка прав) — открой PowerShell **от имени администратора** и повтори команду.
 
+### Сборка своего установщика (.exe)
+
+Чтобы собрать **Windows NSIS** и положить файл на сайт **Voxiva Web** для скачивания, см. [`BUILD.md`](./BUILD.md) (скрипты `scripts/build-windows-release.ps1` и `scripts/copy-installer-to-web.ps1`).
+
 ### Обновление
 
-Чтобы обновиться до последней версии, выполни **ту же самую команду** — она скачает MSI из **Latest Release** и установит поверх.
+Чтобы обновиться до последней версии, выполни **ту же самую команду** — она скачает установщик из **Latest Release** и установит поверх.
 
 ### Удаление
 
@@ -70,9 +74,13 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 
 If install fails due to permissions, run PowerShell **as Administrator** and retry.
 
+### Build your own Windows installer (.exe)
+
+See [`BUILD.md`](./BUILD.md) for the NSIS build and copying the setup file into **Voxiva Web** (`public/downloads/`) for website downloads.
+
 ### Update
 
-To update to the latest version, run the **same command** again — it downloads the MSI from **Latest Release** and installs over the existing app.
+To update to the latest version, run the **same command** again — it downloads the installer from **Latest Release** and installs over the existing app.
 
 ### Uninstall
 

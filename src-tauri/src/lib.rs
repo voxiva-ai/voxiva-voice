@@ -11,6 +11,7 @@ mod settings_store;
 
 use tauri::Manager;
 use tauri::WindowEvent;
+#[cfg(all(desktop, not(debug_assertions)))]
 use tauri_plugin_updater::UpdaterExt;
 
 use services::dictation::{DictationGate, VoiceActivationGate};
@@ -73,9 +74,9 @@ pub fn run() {
                 tracing::info!("voxiva voice ready (tray + HUD + global shortcut)");
             }
 
-            // Background auto-update (no user commands).
-            // If an update is available, download + install it, then exit.
-            #[cfg(desktop)]
+            // Background auto-update (release only). Dev builds skip this to avoid
+            // noisy GitHub endpoint errors and surprise restarts while iterating.
+            #[cfg(all(desktop, not(debug_assertions)))]
             {
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {

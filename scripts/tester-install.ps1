@@ -4,9 +4,9 @@ $ErrorActionPreference = "Stop"
 # Some environments are picky about `param(...)` in that mode, so we avoid it.
 # Optional overrides via env vars:
 # - $env:VOXIVA_REPO (default: PavelCRG/Voxiva-Voice)
-# - $env:VOXIVA_ASSET_PATTERN (default: *.msi)
+# - $env:VOXIVA_ASSET_PATTERN (default: *.exe; *.msi is still supported)
 $Repo = if ($env:VOXIVA_REPO) { $env:VOXIVA_REPO } else { "PavelCRG/Voxiva-Voice" }
-$AssetPattern = if ($env:VOXIVA_ASSET_PATTERN) { $env:VOXIVA_ASSET_PATTERN } else { "*.msi" }
+$AssetPattern = if ($env:VOXIVA_ASSET_PATTERN) { $env:VOXIVA_ASSET_PATTERN } else { "*.exe" }
 
 function Get-LatestRelease {
   $url = "https://api.github.com/repos/$Repo/releases/latest"
@@ -34,6 +34,9 @@ Write-Host ""
 
 $rel = Get-LatestRelease
 $asset = $rel.assets | Where-Object { $_.name -like $AssetPattern } | Select-Object -First 1
+if (-not $asset -and $AssetPattern -ne "*.msi") {
+  $asset = $rel.assets | Where-Object { $_.name -like "*.msi" } | Select-Object -First 1
+}
 if (-not $asset) { throw "No release asset matching '$AssetPattern' found in $Repo latest release." }
 
 $tmp = Join-Path $env:TEMP $asset.name
@@ -41,8 +44,13 @@ Write-Host "Downloading: $($asset.name)"
 Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $tmp
 
 Write-Host "Installing (silent)..."
-$p = Start-Process msiexec.exe -Wait -PassThru -ArgumentList @("/i", "`"$tmp`"", "/qn", "/norestart")
-if ($p.ExitCode -ne 0) { throw "MSI install failed (exit code: $($p.ExitCode)). Try running PowerShell as Administrator." }
+$ext = [System.IO.Path]::GetExtension($tmp).ToLowerInvariant()
+if ($ext -eq ".msi") {
+  $p = Start-Process msiexec.exe -Wait -PassThru -ArgumentList @("/i", "`"$tmp`"", "/qn", "/norestart")
+} else {
+  $p = Start-Process -FilePath $tmp -Wait -PassThru -ArgumentList @("/S")
+}
+if ($p.ExitCode -ne 0) { throw "Installer failed (exit code: $($p.ExitCode)). Try running PowerShell as Administrator." }
 
 Start-Sleep -Milliseconds 600
 

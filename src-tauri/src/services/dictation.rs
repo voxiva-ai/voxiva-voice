@@ -78,6 +78,27 @@ fn emit_hud_error(app: &AppHandle, message: &str) {
     );
 }
 
+fn clear_dictation_gate(app: &AppHandle) {
+    if let Some(g) = app.try_state::<DictationGate>() {
+        g.clear_stop();
+    }
+}
+
+fn has_enough_audio(audio: &audio::CapturedAudio) -> bool {
+    if audio.sample_rate_hz == 0 || audio.samples.is_empty() {
+        return false;
+    }
+
+    let duration_ms = (audio.samples.len() as f64 / audio.sample_rate_hz as f64) * 1000.0;
+    if duration_ms < 180.0 {
+        return false;
+    }
+
+    let sum = audio.samples.iter().map(|s| s * s).sum::<f32>();
+    let rms = (sum / audio.samples.len() as f32).sqrt();
+    rms >= 0.002
+}
+
 pub fn begin_session(app: AppHandle, settings: AppSettings) {
     let gate = match app.try_state::<DictationGate>() {
         Some(g) => g,
@@ -136,18 +157,37 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
                     &app_th,
                     "Microphone is busy or blocked. Close apps using mic (Discord/Zoom) or allow microphone access in Windows Settings.",
                 );
-                audio::CapturedAudio {
-                    samples: Vec::new(),
-                    sample_rate_hz: 0,
-                }
+                clear_dictation_gate(&app_th);
+                return;
             }
         };
+
+        if !has_enough_audio(&audio) {
+            tracing::info!("skipping dictation paste: captured audio was empty or too quiet");
+            emit_hud(&app_th, "idle", focus::foreground_window_title());
+            clear_dictation_gate(&app_th);
+            return;
+        }
 
         // show "typing…" while we run STT
         emit_hud_phase(&app_th, "transcribing");
 
-        let text = stt::transcribe(&audio, &settings_th);
+        let text = match stt::transcribe(&audio, &settings_th) {
+            Ok(text) => text,
+            Err(e) => {
+                tracing::warn!("transcription failed: {e}");
+                emit_hud_error(&app_th, &format!("Transcription failed: {e}"));
+                clear_dictation_gate(&app_th);
+                return;
+            }
+        };
         let text = dictionary::apply(&text, &settings_th.dict_replacements);
+        if text.trim().is_empty() {
+            tracing::info!("skipping dictation paste: transcription returned empty text");
+            emit_hud(&app_th, "idle", focus::foreground_window_title());
+            clear_dictation_gate(&app_th);
+            return;
+        }
         let paste_method = settings_th.paste_method;
 
         let h = app_th.clone();
@@ -157,9 +197,7 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
             }
             let idle_target = focus::foreground_window_title();
             emit_hud(&h, "idle", idle_target);
-            if let Some(g) = h.try_state::<DictationGate>() {
-                g.clear_stop();
-            }
+            clear_dictation_gate(&h);
         }) {
             tracing::warn!("run_on_main_thread: {e}");
         }
@@ -270,8 +308,21 @@ pub fn start_voice_activation_loop(app: AppHandle) {
             }
         }
 
-        let text = stt::transcribe(&captured, &settings);
+        if !has_enough_audio(&captured) {
+            continue;
+        }
+
+        let text = match stt::transcribe(&captured, &settings) {
+            Ok(text) => text,
+            Err(e) => {
+                tracing::warn!("voice activation transcription failed: {e}");
+                continue;
+            }
+        };
         let text = dictionary::apply(&text, &settings.dict_replacements);
+        if text.trim().is_empty() {
+            continue;
+        }
         let _ = injection::paste_text_with_method(&text, settings.paste_method);
     });
 }

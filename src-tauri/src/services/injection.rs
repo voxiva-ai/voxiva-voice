@@ -3,7 +3,10 @@
 use arboard::Clipboard;
 use enigo::{Direction, Enigo, Key, Keyboard, Settings};
 
-pub fn paste_text_with_method(text: &str, method: crate::config::PasteMethod) -> Result<(), String> {
+pub fn paste_text_with_method(
+    text: &str,
+    method: crate::config::PasteMethod,
+) -> Result<(), String> {
     let mut clip = Clipboard::new().map_err(|e| e.to_string())?;
     clip.set_text(text).map_err(|e| e.to_string())?;
 
@@ -31,7 +34,9 @@ pub fn paste_text_with_method(text: &str, method: crate::config::PasteMethod) ->
     match method {
         crate::config::PasteMethod::CtrlV => combo(&mut enigo, &[Key::Control], Key::Unicode('v'))?,
         crate::config::PasteMethod::ShiftInsert => combo(&mut enigo, &[Key::Shift], Key::Insert)?,
-        crate::config::PasteMethod::CtrlShiftV => combo(&mut enigo, &[Key::Control, Key::Shift], Key::Unicode('v'))?,
+        crate::config::PasteMethod::CtrlShiftV => {
+            combo(&mut enigo, &[Key::Control, Key::Shift], Key::Unicode('v'))?
+        }
     }
 
     Ok(())

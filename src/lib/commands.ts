@@ -25,6 +25,6 @@ export async function getWhisperAssetsStatus(): Promise<WhisperAssetsStatus> {
   return invoke<WhisperAssetsStatus>("get_whisper_assets_status");
 }
 
-export async function downloadWhisperAssets(): Promise<void> {
-  return invoke<void>("download_whisper_assets");
+export async function downloadWhisperAssets(): Promise<WhisperAssetsStatus> {
+  return invoke<WhisperAssetsStatus>("download_whisper_assets");
 }

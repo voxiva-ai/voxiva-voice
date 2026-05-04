@@ -9,11 +9,10 @@ use crate::services::audio::CapturedAudio;
 pub mod bootstrap_whisper;
 mod whisper_cli;
 
-pub fn transcribe(audio: &CapturedAudio, settings: &AppSettings) -> String {
+pub fn transcribe(audio: &CapturedAudio, settings: &AppSettings) -> Result<String, String> {
     match settings.stt_mode {
-        SttMode::LocalStub => stub_text(settings.dictation_language, audio.samples.len()),
-        SttMode::WhisperCli => whisper_cli::transcribe_whisper_cli(audio, settings)
-            .unwrap_or_else(|e| format!("[Voxiva Voice] Whisper CLI error: {e}")),
+        SttMode::LocalStub => Ok(stub_text(settings.dictation_language, audio.samples.len())),
+        SttMode::WhisperCli => whisper_cli::transcribe_whisper_cli(audio, settings),
     }
 }
 

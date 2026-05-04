@@ -16,7 +16,10 @@ pub fn save_settings(app: AppHandle, settings: AppSettings) -> Result<(), String
     settings_store::save(&app, &settings).map_err(|e| e.to_string())?;
     crate::bootstrap::reregister_hotkey(&app).map_err(|e| e.to_string())?;
     // Apply voice-activation immediately when toggled in Settings UI.
-    crate::services::dictation::set_voice_activation_enabled(&app, settings.voice_activation_enabled);
+    crate::services::dictation::set_voice_activation_enabled(
+        &app,
+        settings.voice_activation_enabled,
+    );
     let _ = app.emit_to("hud", "vv:hud-settings", &settings);
     Ok(())
 }

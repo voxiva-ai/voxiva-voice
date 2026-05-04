@@ -113,6 +113,7 @@ export function SettingsPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [whisperStatus, setWhisperStatus] = useState<string | null>(null);
   const [whisperError, setWhisperError] = useState<string | null>(null);
+  const [whisperDownloading, setWhisperDownloading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hotkeyPresetId, setHotkeyPresetId] = useState<string>("default");
@@ -192,13 +193,20 @@ export function SettingsPage() {
 
   async function onDownloadWhisper() {
     setWhisperError(null);
-    setWhisperStatus("Downloading… (this can take a while)");
+    setWhisperDownloading(true);
+    setWhisperStatus("Downloading and preparing Whisper… (this can take a while)");
     try {
-      await downloadWhisperAssets();
-      setWhisperStatus("Download started. You can keep using the app; check back in a minute.");
+      const ws = await downloadWhisperAssets();
+      setWhisperStatus(ws.ready ? "Ready" : `Not ready (assets folder: ${ws.dir})`);
+      const nextSettings = await getSettings();
+      setSettings(nextSettings);
+      setWhisperCliPath((nextSettings.whisperCliPath ?? "").toString());
+      setWhisperModelPath((nextSettings.whisperModelPath ?? "").toString());
     } catch (e) {
       setWhisperError(e instanceof Error ? e.message : String(e));
       setWhisperStatus(null);
+    } finally {
+      setWhisperDownloading(false);
     }
   }
 
@@ -325,8 +333,8 @@ export function SettingsPage() {
                 </div>
               </div>
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                <Button variant="secondary" onClick={() => void onDownloadWhisper()}>
-                  Download
+                <Button variant="secondary" onClick={() => void onDownloadWhisper()} disabled={whisperDownloading}>
+                  {whisperDownloading ? "Preparing…" : "Download"}
                 </Button>
                 <Button
                   variant="ghost"

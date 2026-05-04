@@ -23,10 +23,10 @@ pub enum RecordingMode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum SttMode {
-    /// No cloud; placeholder text until whisper.cpp is wired.
-    #[default]
+    /// No cloud; deterministic placeholder text for diagnostics.
     LocalStub,
     /// Run local whisper.cpp via `whisper-cli` executable (free, offline).
+    #[default]
     WhisperCli,
 }
 
