@@ -135,7 +135,7 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
         let mut last_emit = std::time::Instant::now();
         let audio = match audio::record_while_stopped(
             &stop,
-            Some(move |rms: f32| {
+            Some(move |rms: f32, _frames: usize| {
                 // throttle ~20fps
                 if last_emit.elapsed().as_millis() < 50 {
                     return;
@@ -242,14 +242,12 @@ pub fn start_voice_activation_loop(app: AppHandle) {
         let stop = Arc::new(AtomicBool::new(false));
         let start_idx = Arc::new(Mutex::new(None::<usize>));
         let last_voice = Arc::new(Mutex::new(None::<std::time::Instant>));
-        let sample_rate_seen = Arc::new(Mutex::new(0u32));
         let samples_seen = Arc::new(Mutex::new(0usize));
 
         let app_lv = app.clone();
         let stop_lv = stop.clone();
         let start_idx_lv = start_idx.clone();
         let last_voice_lv = last_voice.clone();
-        let sample_rate_lv = sample_rate_seen.clone();
         let samples_seen_lv = samples_seen.clone();
 
         // Tuneable thresholds (simple, good enough for MVP)
@@ -259,19 +257,19 @@ pub fn start_voice_activation_loop(app: AppHandle) {
 
         let captured = audio::record_while_stopped(
             &stop,
-            Some(move |rms: f32| {
+            Some(move |rms: f32, frames: usize| {
                 // normalize to 0..1
                 let level: f32 = (rms * 3.5f32).min(1.0f32);
                 emit_hud_level(&app_lv, level);
 
                 // track sample index to trim pre-roll later
                 let mut seen = samples_seen_lv.lock().unwrap();
-                *seen = seen.saturating_add(800); // rough; audio::record_while_stopped chunks vary, but ok for start trim estimation
+                *seen = seen.saturating_add(frames);
 
                 if level >= voice_th {
                     *last_voice_lv.lock().unwrap() = Some(std::time::Instant::now());
                     if start_idx_lv.lock().unwrap().is_none() {
-                        *start_idx_lv.lock().unwrap() = Some(*seen);
+                        *start_idx_lv.lock().unwrap() = Some(seen.saturating_sub(frames));
                     }
                 }
 
@@ -284,8 +282,6 @@ pub fn start_voice_activation_loop(app: AppHandle) {
                         }
                     }
                 }
-
-                let _ = sample_rate_lv;
             }),
         );
 
@@ -323,7 +319,16 @@ pub fn start_voice_activation_loop(app: AppHandle) {
         if text.trim().is_empty() {
             continue;
         }
-        let _ = injection::paste_text_with_method(&text, settings.paste_method);
+        let paste_method = settings.paste_method;
+        let h = app.clone();
+        if let Err(e) = app.run_on_main_thread(move || {
+            if let Err(e) = injection::paste_text_with_method(&text, paste_method) {
+                tracing::warn!("voice activation paste: {e}");
+            }
+            emit_hud(&h, "idle", focus::foreground_window_title());
+        }) {
+            tracing::warn!("voice activation run_on_main_thread: {e}");
+        }
     });
 }
 

@@ -6,8 +6,52 @@ use tauri::webview::WebviewWindowBuilder;
 use tauri::WebviewUrl;
 use tauri::{AppHandle, Manager};
 
-pub fn reregister_hotkey(app: &AppHandle) -> Result<(), String> {
-    register_hotkey_inner(app).map_err(|e| e.to_string())
+use crate::config::AppSettings;
+
+fn register_hotkey(
+    app: &AppHandle,
+    hotkey: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    use tauri_plugin_global_shortcut::GlobalShortcutExt;
+
+    app.global_shortcut().on_shortcut(hotkey, |app, _, event| {
+        crate::services::dictation::on_global_shortcut(app, event.state);
+    })?;
+
+    Ok(())
+}
+
+pub fn reregister_hotkey_for_settings(
+    app: &AppHandle,
+    previous: &AppSettings,
+    next: &AppSettings,
+) -> Result<(), String> {
+    use tauri_plugin_global_shortcut::GlobalShortcutExt;
+
+    let old_hotkey = previous.push_to_talk_hotkey.trim();
+    let new_hotkey = next.push_to_talk_hotkey.trim();
+
+    if new_hotkey.is_empty() {
+        return Err("hotkey cannot be empty".to_string());
+    }
+
+    if old_hotkey.eq_ignore_ascii_case(new_hotkey) {
+        return Ok(());
+    }
+
+    let gs = app.global_shortcut();
+    if !old_hotkey.is_empty() {
+        let _ = gs.unregister(old_hotkey);
+    }
+
+    if let Err(e) = register_hotkey(app, new_hotkey) {
+        if !old_hotkey.is_empty() {
+            let _ = register_hotkey(app, old_hotkey);
+        }
+        return Err(e.to_string());
+    }
+
+    Ok(())
 }
 
 fn register_hotkey_inner(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -19,9 +63,7 @@ fn register_hotkey_inner(app: &AppHandle) -> Result<(), Box<dyn std::error::Erro
     let settings = crate::settings_store::load(app)?;
     let hk = settings.push_to_talk_hotkey.clone();
 
-    gs.on_shortcut(hk.as_str(), |app, _, event| {
-        crate::services::dictation::on_global_shortcut(app, event.state);
-    })?;
+    register_hotkey(app, hk.as_str())?;
 
     Ok(())
 }

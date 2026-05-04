@@ -24,7 +24,7 @@ fn build_stream_with_level_cb<F>(
     mut on_level: Option<F>,
 ) -> Result<cpal::Stream, cpal::BuildStreamError>
 where
-    F: FnMut(f32) + Send + 'static,
+    F: FnMut(f32, usize) + Send + 'static,
 {
     let err_fn = |e| tracing::warn!("cpal stream error: {e}");
 
@@ -48,7 +48,7 @@ where
                         n += 1;
                     }
                     if n > 0 {
-                        cb((sum / n as f32).sqrt());
+                        cb((sum / n as f32).sqrt(), n);
                     }
                 }
                 if channels == 1 {
@@ -84,7 +84,7 @@ where
                         n += 1;
                     }
                     if n > 0 {
-                        cb((sum / n as f32).sqrt());
+                        cb((sum / n as f32).sqrt(), n);
                     }
                 }
                 let mut lock = samples.lock().unwrap();
@@ -111,7 +111,7 @@ pub fn record_while_stopped<F>(
     mut on_level: Option<F>,
 ) -> Result<CapturedAudio, String>
 where
-    F: FnMut(f32) + Send + 'static,
+    F: FnMut(f32, usize) + Send + 'static,
 {
     // When another app is using the microphone (Discord, Zoom, etc.), opening the stream
     // can temporarily fail (depending on device/driver/exclusive mode). We'll retry a bit.

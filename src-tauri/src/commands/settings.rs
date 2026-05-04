@@ -13,8 +13,10 @@ pub fn get_settings(app: AppHandle) -> Result<AppSettings, String> {
 
 #[tauri::command]
 pub fn save_settings(app: AppHandle, settings: AppSettings) -> Result<(), String> {
+    let previous = settings_store::load(&app).map_err(|e| e.to_string())?;
+    crate::bootstrap::reregister_hotkey_for_settings(&app, &previous, &settings)
+        .map_err(|e| e.to_string())?;
     settings_store::save(&app, &settings).map_err(|e| e.to_string())?;
-    crate::bootstrap::reregister_hotkey(&app).map_err(|e| e.to_string())?;
     // Apply voice-activation immediately when toggled in Settings UI.
     crate::services::dictation::set_voice_activation_enabled(
         &app,
