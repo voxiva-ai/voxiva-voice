@@ -28,7 +28,7 @@
   },
   "bundle": {
     "active": true,
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": false,
     "targets": ["nsis"],
     "category": "Productivity",
     "shortDescription": "Voice dictation for developers",
@@ -51,7 +51,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/PavelCRG/Voxiva-Voice/releases/latest/download/latest.json"
+        "https://github.com/voxiva-ai/voxiva-voice/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ4RTRCQjY2RDk0MTc2MEEKUldRS2RrSFpacnZrU1A3cDdEV09xemtzakF5ek1yUFFmSGZwTHdyb3VDdGw5b2dMQWVyZXdYVmIK"
     }

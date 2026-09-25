@@ -31,15 +31,12 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           args: --config src-tauri/tauri.conf.release.json --bundles nsis
           tagName: ${{ github.ref_name }}
           releaseName: "Voxiva Voice ${{ github.ref_name }}"
-          releaseBody: "Auto-generated release."
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
-          prerelease: false
+          releaseBody: "Beta installer. Install: `irm https://raw.githubusercontent.com/voxiva-ai/voxiva-voice/main/scripts/tester-install.ps1 | iex`"
+          includeUpdaterJson: false
+          prerelease: true
           releaseDraft: false
 
