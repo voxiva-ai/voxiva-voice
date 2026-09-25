@@ -45,7 +45,8 @@ pub fn load(app: &AppHandle) -> Result<UsageStats> {
     if !path.exists() {
         return Ok(UsageStats::default());
     }
-    let raw = fs::read_to_string(&path).map_err(|e| crate::error::AppError::Config(e.to_string()))?;
+    let raw =
+        fs::read_to_string(&path).map_err(|e| crate::error::AppError::Config(e.to_string()))?;
     serde_json::from_str(&raw).map_err(|e| crate::error::AppError::Config(e.to_string()))
 }
 
@@ -54,8 +55,8 @@ fn save(app: &AppHandle, stats: &UsageStats) -> Result<()> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|e| crate::error::AppError::Config(e.to_string()))?;
     }
-    let raw =
-        serde_json::to_string_pretty(stats).map_err(|e| crate::error::AppError::Config(e.to_string()))?;
+    let raw = serde_json::to_string_pretty(stats)
+        .map_err(|e| crate::error::AppError::Config(e.to_string()))?;
     fs::write(path, raw).map_err(|e| crate::error::AppError::Config(e.to_string()))
 }
 

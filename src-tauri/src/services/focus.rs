@@ -15,10 +15,7 @@ static LAST_EXTERNAL: Mutex<Option<PasteTarget>> = Mutex::new(None);
 
 pub fn is_own_window_title(title: &str) -> bool {
     let t = title.trim().to_lowercase();
-    t.contains("voxiva voice")
-        || t.contains("voxiva hud")
-        || t == "voxiva hud"
-        || t.is_empty()
+    t.contains("voxiva voice") || t.contains("voxiva hud") || t == "voxiva hud" || t.is_empty()
 }
 
 #[cfg(windows)]
@@ -89,13 +86,13 @@ pub fn restore_paste_target(target: &PasteTarget) {
         let fg_thread = GetWindowThreadProcessId(hwnd, None);
         let cur_thread = GetCurrentThreadId();
         let attached = if fg_thread != 0 && fg_thread != cur_thread {
-            AttachThreadInput(cur_thread, fg_thread, true.into()).as_bool()
+            AttachThreadInput(cur_thread, fg_thread, true).as_bool()
         } else {
             false
         };
         let _ = SetForegroundWindow(hwnd);
         if attached {
-            let _ = AttachThreadInput(cur_thread, fg_thread, false.into());
+            let _ = AttachThreadInput(cur_thread, fg_thread, false);
         }
     }
 }

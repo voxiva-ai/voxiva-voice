@@ -8,10 +8,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::config::AppSettings;
 
-fn register_hotkey(
-    app: &AppHandle,
-    hotkey: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn register_hotkey(app: &AppHandle, hotkey: &str) -> Result<(), Box<dyn std::error::Error>> {
     use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
     app.global_shortcut().on_shortcut(hotkey, |app, _, event| {
@@ -129,12 +126,10 @@ pub fn create_hud_window(app: &AppHandle) -> Result<(), Box<dyn std::error::Erro
 }
 
 fn start_usage_ticker(app: AppHandle) {
-    std::thread::spawn(move || {
-        loop {
-            std::thread::sleep(std::time::Duration::from_secs(30));
-            if let Err(e) = crate::stats_store::tick_app_seconds(&app, 30) {
-                tracing::warn!("usage tick: {e}");
-            }
+    std::thread::spawn(move || loop {
+        std::thread::sleep(std::time::Duration::from_secs(30));
+        if let Err(e) = crate::stats_store::tick_app_seconds(&app, 30) {
+            tracing::warn!("usage tick: {e}");
         }
     });
 }
@@ -148,14 +143,17 @@ pub fn init(handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let bg = handle.clone();
     std::thread::spawn(move || {
         if let Ok(s) = crate::settings_store::load(&bg) {
-            let needs = s.whisper_cli_path.as_ref().is_none_or(|p| !std::path::Path::new(p).exists())
-                || s
-                    .whisper_model_path
+            let needs = s
+                .whisper_cli_path
+                .as_ref()
+                .is_none_or(|p| !std::path::Path::new(p).exists())
+                || s.whisper_model_path
                     .as_ref()
                     .is_none_or(|p| !std::path::Path::new(p).exists());
             if needs {
                 tracing::info!("whisper assets missing — preparing offline STT in background");
-                if let Err(e) = crate::services::stt::bootstrap_whisper::ensure_whisper_assets(&bg) {
+                if let Err(e) = crate::services::stt::bootstrap_whisper::ensure_whisper_assets(&bg)
+                {
                     tracing::warn!("whisper bootstrap failed: {e:?}");
                 }
             }

@@ -3,8 +3,15 @@
 use tauri::{AppHandle, Manager};
 
 #[tauri::command]
-pub fn clip_hud_window(app: AppHandle, width: u32, height: u32, icon_only: bool) -> Result<(), String> {
-    let hud = app.get_webview_window("hud").ok_or("hud window not found")?;
+pub fn clip_hud_window(
+    app: AppHandle,
+    width: u32,
+    height: u32,
+    icon_only: bool,
+) -> Result<(), String> {
+    let hud = app
+        .get_webview_window("hud")
+        .ok_or("hud window not found")?;
     clip_hud_round(&hud, width, height, icon_only)
 }
 
@@ -38,6 +45,11 @@ fn clip_hud_round(
 }
 
 #[cfg(not(windows))]
-fn clip_hud_round(_window: &tauri::WebviewWindow, _width: u32, _height: u32, _icon_only: bool) -> Result<(), String> {
+fn clip_hud_round(
+    _window: &tauri::WebviewWindow,
+    _width: u32,
+    _height: u32,
+    _icon_only: bool,
+) -> Result<(), String> {
     Ok(())
 }

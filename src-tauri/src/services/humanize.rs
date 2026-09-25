@@ -20,9 +20,7 @@ pub fn humanize(input: &str) -> String {
         .replace("« ", "«")
         .replace(" »", "»");
 
-    for filler in [
-        " э ", " ээ ", " эм ", " мм ", " uh ", " um ", " er ",
-    ] {
+    for filler in [" э ", " ээ ", " эм ", " мм ", " uh ", " um ", " er "] {
         while s.to_lowercase().contains(filler.trim()) {
             // Case-insensitive replace of filler as whole token-ish span.
             if let Some(idx) = find_ci(&s, filler) {
@@ -46,10 +44,8 @@ pub fn humanize(input: &str) -> String {
 fn find_ci(hay: &str, needle: &str) -> Option<usize> {
     let h = hay.to_lowercase();
     let n = needle.to_lowercase();
-    h.find(&n).map(|byte_idx| {
-        // Map lowercase byte index back — OK for ASCII fillers we use.
-        byte_idx
-    })
+    // Lowercase byte index matches original for ASCII fillers we use.
+    h.find(&n)
 }
 
 fn insert_commas(text: &str) -> String {
@@ -65,9 +61,25 @@ fn insert_commas(text: &str) -> String {
 
     let mut out = text.to_string();
     for word in [
-        " но ", " а ", " однако ", " поэтому ", " значит ", " например ", " кстати ", " впрочем ",
-        " то есть ", " потому что ", " так что ", " хотя ", " чтобы ",
-        " but ", " however ", " therefore ", " for example ", " because ", " although ",
+        " но ",
+        " а ",
+        " однако ",
+        " поэтому ",
+        " значит ",
+        " например ",
+        " кстати ",
+        " впрочем ",
+        " то есть ",
+        " потому что ",
+        " так что ",
+        " хотя ",
+        " чтобы ",
+        " but ",
+        " however ",
+        " therefore ",
+        " for example ",
+        " because ",
+        " although ",
     ] {
         out = soft_comma_before(&out, word);
     }
@@ -89,7 +101,12 @@ fn soft_comma_before(text: &str, needle: &str) -> String {
                 .chars()
                 .rev()
                 .find(|c| !c.is_whitespace())
-                .is_some_and(|c| matches!(c, ',' | '.' | '!' | '?' | ';' | ':' | '(' | '[' | '{' | '«' | '"' | '\''));
+                .is_some_and(|c| {
+                    matches!(
+                        c,
+                        ',' | '.' | '!' | '?' | ';' | ':' | '(' | '[' | '{' | '«' | '"' | '\''
+                    )
+                });
         if needs_comma {
             out.push(',');
         }
@@ -135,8 +152,23 @@ fn ensure_terminal_punct(text: &str) -> String {
     }
     let lower = t.to_lowercase();
     let is_q = [
-        "что ", "как ", "где ", "когда ", "почему ", "зачем ", "кто ", "какой ", "какая ", "какие ",
-        "what ", "how ", "where ", "when ", "why ", "who ", "which ",
+        "что ",
+        "как ",
+        "где ",
+        "когда ",
+        "почему ",
+        "зачем ",
+        "кто ",
+        "какой ",
+        "какая ",
+        "какие ",
+        "what ",
+        "how ",
+        "where ",
+        "when ",
+        "why ",
+        "who ",
+        "which ",
     ]
     .iter()
     .any(|p| lower.starts_with(p));

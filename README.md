@@ -1,13 +1,5 @@
 <p align="center">
-  <img
-    src="src/assets/brand/voxiva-hero-banner.svg"
-    width="100%"
-    style="max-width: 1100px; height: auto;"
-    alt="Voxiva Voice — Stop typing. Just speak."
-  />
-</p>
-
-<p align="center">
+  <strong>Voxiva Voice</strong> · beta 0.1.0<br/>
   <a href="#ru">Русский</a> · <a href="#en">English</a>
 </p>
 

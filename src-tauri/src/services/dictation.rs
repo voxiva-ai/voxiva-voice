@@ -209,7 +209,8 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
         let h = app_th.clone();
         let target = paste_target_th;
         if let Err(e) = app_th.run_on_main_thread(move || {
-            if let Err(e) = injection::paste_text_with_method(&text, paste_method, target.as_ref()) {
+            if let Err(e) = injection::paste_text_with_method(&text, paste_method, target.as_ref())
+            {
                 tracing::warn!("paste: {e}");
             }
             let idle_target = focus::foreground_window_title();
@@ -353,7 +354,9 @@ pub fn start_voice_activation_loop(app: AppHandle) {
         let h = app.clone();
         if let Err(e) = app.run_on_main_thread(move || {
             let paste_target = focus::paste_target_for_session();
-            if let Err(e) = injection::paste_text_with_method(&text, paste_method, paste_target.as_ref()) {
+            if let Err(e) =
+                injection::paste_text_with_method(&text, paste_method, paste_target.as_ref())
+            {
                 tracing::warn!("voice activation paste: {e}");
             }
             emit_hud(&h, "idle", focus::foreground_window_title());

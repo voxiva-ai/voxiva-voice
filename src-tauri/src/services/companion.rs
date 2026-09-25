@@ -37,7 +37,11 @@ fn load_persisted_token(app: &AppHandle) -> Option<String> {
     let path = crate::paths::companion_token_file(app).ok()?;
     let raw = std::fs::read_to_string(path).ok()?;
     let t = raw.trim().to_string();
-    if t.is_empty() { None } else { Some(t) }
+    if t.is_empty() {
+        None
+    } else {
+        Some(t)
+    }
 }
 
 fn persist_token(app: &AppHandle, token: &str) {
@@ -87,7 +91,12 @@ fn local_ip() -> Option<String> {
     Some(socket.local_addr().ok()?.ip().to_string())
 }
 
-fn respond_bytes(request: Request, bytes: &[u8], content_type: &str, cache: &str) -> Result<(), String> {
+fn respond_bytes(
+    request: Request,
+    bytes: &[u8],
+    content_type: &str,
+    cache: &str,
+) -> Result<(), String> {
     let mut res = Response::from_data(bytes.to_vec()).with_status_code(StatusCode(200));
     if let Ok(h) = Header::from_bytes(b"Content-Type", content_type.as_bytes()) {
         res.add_header(h);
@@ -102,7 +111,12 @@ fn respond_bytes(request: Request, bytes: &[u8], content_type: &str, cache: &str
     request.respond(res).map_err(|e| e.to_string())
 }
 
-fn respond_str(request: Request, body: &str, content_type: &str, cache: &str) -> Result<(), String> {
+fn respond_str(
+    request: Request,
+    body: &str,
+    content_type: &str,
+    cache: &str,
+) -> Result<(), String> {
     respond_bytes(request, body.as_bytes(), content_type, cache)
 }
 
@@ -208,7 +222,7 @@ fn handle(mut request: Request, app: &AppHandle) -> Result<(), String> {
     if method == Method::Get && (path == "/logo.png" || path == "/apple-touch-icon.png") {
         return respond_bytes(
             request,
-            include_bytes!("../../icons/_source.png"),
+            include_bytes!("../../icons/icon.png"),
             "image/png",
             "public, max-age=86400",
         );
@@ -257,7 +271,8 @@ fn paste_now(app: &AppHandle, text: &str) {
         out = humanize::humanize(&out);
     }
     let target = focus::paste_target_for_session();
-    if let Err(e) = injection::paste_text_with_method(&out, settings.paste_method, target.as_ref()) {
+    if let Err(e) = injection::paste_text_with_method(&out, settings.paste_method, target.as_ref())
+    {
         tracing::warn!("companion paste: {e}");
     }
 }

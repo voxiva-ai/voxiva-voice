@@ -129,10 +129,7 @@ where
                 }
                 let mut lock = samples.lock().unwrap();
                 if channels == 1 {
-                    lock.extend(
-                        data.iter()
-                            .map(|s| (*s as f32 - 32768.0) / 32768.0),
-                    );
+                    lock.extend(data.iter().map(|s| (*s as f32 - 32768.0) / 32768.0));
                 } else {
                     for frame in data.chunks(channels) {
                         let m = frame
@@ -183,15 +180,17 @@ where
 
     for attempt in 0..RETRIES {
         let res = match sample_format {
-            SampleFormat::F32 | SampleFormat::I16 | SampleFormat::U16 => build_stream_with_level_cb(
-                &device,
-                &cfg,
-                sample_format,
-                channels,
-                stop.clone(),
-                samples_cb.clone(),
-                on_level.take(),
-            ),
+            SampleFormat::F32 | SampleFormat::I16 | SampleFormat::U16 => {
+                build_stream_with_level_cb(
+                    &device,
+                    &cfg,
+                    sample_format,
+                    channels,
+                    stop.clone(),
+                    samples_cb.clone(),
+                    on_level.take(),
+                )
+            }
             other => {
                 return Err(format!(
                     "unsupported microphone sample format {other:?} (device must expose f32, i16, or u16)"
