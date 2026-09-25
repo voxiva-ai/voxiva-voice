@@ -1,47 +1,79 @@
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import logoUrl from "@/assets/brand/voxiva-mark.svg";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getSettings, getUsageStats } from "@/lib/commands";
+import { formatDuration } from "@/lib/formatStats";
+import type { AppSettings } from "@/types/settings";
+import type { UsageStats } from "@/types/stats";
 import { useI18n } from "@/i18n/I18nContext";
 
 export function HomePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [stats, setStats] = useState<UsageStats | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [s, st] = await Promise.all([getSettings(), getUsageStats()]);
+        if (!cancelled) {
+          setSettings(s);
+          setStats(st);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function minimizeToHud() {
+    try {
+      await getCurrentWindow().minimize();
+    } catch {
+      // web
+    }
+  }
+
+  const mode =
+    settings?.recordingMode === "toggle" ? t("settings.recordingModeToggle") : t("settings.recordingModePtt");
+
   return (
-    <div style={{ maxWidth: 980, margin: "0 auto", display: "grid", gap: "1rem" }}>
-      <section className="vv-hero">
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "1.15rem", alignItems: "center" }}>
-          <img className="vv-heroMark" src={logoUrl} alt="Voxiva Voice" width={72} height={72} />
-          <div style={{ flex: "1 1 360px", minWidth: 280 }}>
-            <h1 className="vv-glassTitle">{t("overview.heroTitle")}</h1>
-            <p className="vv-heroTagline">{t("overview.heroBody")}</p>
-            <div style={{ marginTop: "0.9rem", display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-              <Link to="/settings" style={{ textDecoration: "none" }}>
-                <Button>{t("overview.openSettings")}</Button>
-              </Link>
-            </div>
-          </div>
+    <div className="vv-page vv-pageCompact">
+      <div className="vv-pageInner">
+        <header className="vv-pageHeader">
+          <h2 className="vv-pageTitle">{t("overview.heroTitle")}</h2>
+          <p className="vv-pageSubtitle">{t("overview.heroBody")}</p>
+          <button type="button" className="vv-overviewHudBtn" onClick={() => void minimizeToHud()}>
+            {t("overview.minimizeHud")}
+          </button>
+        </header>
+
+        <div className="vv-overviewCards">
+          <article className="vv-overviewCard">
+            <span className="vv-overviewLabel">{t("overview.cardHotkey")}</span>
+            <strong className="vv-overviewValue vv-mono">{settings?.pushToTalkHotkey ?? "ctrl+shift+space"}</strong>
+          </article>
+          <article className="vv-overviewCard">
+            <span className="vv-overviewLabel">{t("overview.cardMode")}</span>
+            <strong className="vv-overviewValue">{mode}</strong>
+          </article>
+          <article className="vv-overviewCard">
+            <span className="vv-overviewLabel">{t("stats.words")}</span>
+            <strong className="vv-overviewValue">{stats?.totalWords ?? 0}</strong>
+          </article>
+          <article className="vv-overviewCard">
+            <span className="vv-overviewLabel">{t("stats.sessions")}</span>
+            <strong className="vv-overviewValue">{stats?.dictationCount ?? 0}</strong>
+          </article>
+          <article className="vv-overviewCard is-wide">
+            <span className="vv-overviewLabel">{t("stats.dictationTime")}</span>
+            <strong className="vv-overviewValue">{formatDuration(stats?.totalDictationSeconds ?? 0, locale)}</strong>
+          </article>
         </div>
-      </section>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.85rem" }}>
-        <Card>
-          <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.05rem" }}>{t("overview.howTitle")}</h2>
-          <ul style={{ margin: 0, paddingLeft: "1.1rem", color: "var(--vv-muted)", lineHeight: 1.5 }}>
-            <li>{t("overview.step1")}</li>
-            <li>{t("overview.step2")}</li>
-            <li>{t("overview.step3")}</li>
-          </ul>
-        </Card>
-        <Card>
-          <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.05rem" }}>{t("overview.tipsTitle")}</h2>
-          <ul style={{ margin: 0, paddingLeft: "1.1rem", color: "var(--vv-muted)", lineHeight: 1.5 }}>
-            <li>{t("overview.tip1")}</li>
-            <li>{t("overview.tip2")}</li>
-            <li>{t("overview.tip3")}</li>
-          </ul>
-        </Card>
       </div>
-
     </div>
   );
 }

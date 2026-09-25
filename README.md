@@ -23,7 +23,7 @@ Voxiva Voice — диктовка в любое приложение: Блокн
 Открой PowerShell и вставь:
 
 ```powershell
-irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-install.ps1 | iex
+irm https://raw.githubusercontent.com/voxiva-ai/voxiva-voice/main/scripts/tester-install.ps1 | iex
 ```
 
 Если установка не проходит (ошибка прав) — открой PowerShell **от имени администратора** и повтори команду.
@@ -57,6 +57,25 @@ irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-
 Закрой приложения, которые используют микрофон (Discord/Zoom) или включи доступ к микрофону в Windows:
 Settings → Privacy & security → Microphone.
 
+### Разработка (из исходников)
+
+Стек как в **Voxiva Space**: React + TypeScript (Vite) + Tauri 2 + Rust.
+
+```powershell
+cd "D:\voxiva.ai\Voxiva Voice"
+npm install
+npm run dev
+```
+
+`npm run dev` открывает **окно приложения** (Tauri). Первая компиляция Rust может занять несколько минут.
+Не открывай `http://localhost:1420` в браузере — это только dev-сервер для встроенного webview.
+
+- `npm run dev:web` — только Vite (для Tauri)
+- `npm run dev:kill` — освободить порт 1420
+- `npm run tauri:build` — установщик для продакшена
+
+Нужны [Rust](https://rustup.rs) и Node.js 20+.
+
 ---
 
 <a id="en"></a>
@@ -69,7 +88,7 @@ Voxiva Voice is a lightweight dictation app for any text field (Notepad, VS Code
 Open PowerShell and paste:
 
 ```powershell
-irm https://raw.githubusercontent.com/PavelCRG/Voxiva-Voice/main/scripts/tester-install.ps1 | iex
+irm https://raw.githubusercontent.com/voxiva-ai/voxiva-voice/main/scripts/tester-install.ps1 | iex
 ```
 
 If install fails due to permissions, run PowerShell **as Administrator** and retry.
@@ -102,6 +121,26 @@ Use the standard Windows flow: **Settings → Apps → Installed apps → Voxiva
 
 Close apps using the mic (Discord/Zoom) or enable mic access in Windows Settings:
 Settings → Privacy & security → Microphone.
+
+### Development (from source)
+
+Stack matches **Voxiva Space**: React + TypeScript (Vite) + Tauri 2 + Rust.
+
+```powershell
+cd "D:\voxiva.ai\Voxiva Voice"
+npm install
+npm run dev
+```
+
+`npm run dev` opens the **desktop window** (Tauri). First Rust compile can take a few minutes.
+Do not open `http://localhost:1420` in a browser — that is only the embedded dev server.
+
+- `npm run dev:web` — Vite only (used internally by Tauri)
+- `npm run dev:kill` — free port 1420 if a stale dev session is stuck
+- `npm run tauri:build` — production installer
+
+Requires [Rust](https://rustup.rs) and Node.js 20+.
+
 ### License
 
 MIT — see `LICENSE`.

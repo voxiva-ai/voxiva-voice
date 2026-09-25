@@ -113,13 +113,14 @@ pub fn create_hud_window(app: &AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     let _hud = WebviewWindowBuilder::new(app, "hud", url)
         .title("Voxiva HUD")
-        .transparent(false)
+        .transparent(true)
         .decorations(false)
+        .shadow(false)
         .always_on_top(true)
         .focusable(false)
         .skip_taskbar(true)
         .position(32.0, 32.0)
-        .inner_size(232.0, 36.0)
+        .inner_size(132.0, 40.0)
         .visible(false)
         .resizable(false)
         .build()?;
@@ -127,12 +128,43 @@ pub fn create_hud_window(app: &AppHandle) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
+fn start_usage_ticker(app: AppHandle) {
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(std::time::Duration::from_secs(30));
+            if let Err(e) = crate::stats_store::tick_app_seconds(&app, 30) {
+                tracing::warn!("usage tick: {e}");
+            }
+        }
+    });
+}
+
 pub fn init(handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     create_hud_window(handle)?;
     install_tray(handle)?;
     register_hotkey_inner(handle)?;
-    // Whisper assets are optional and can be large; we do not auto-download on startup.
+    start_usage_ticker(handle.clone());
+    // Prepare Whisper in the background so dictation works without manual setup.
+    let bg = handle.clone();
+    std::thread::spawn(move || {
+        if let Ok(s) = crate::settings_store::load(&bg) {
+            let needs = s.whisper_cli_path.as_ref().is_none_or(|p| !std::path::Path::new(p).exists())
+                || s
+                    .whisper_model_path
+                    .as_ref()
+                    .is_none_or(|p| !std::path::Path::new(p).exists());
+            if needs {
+                tracing::info!("whisper assets missing — preparing offline STT in background");
+                if let Err(e) = crate::services::stt::bootstrap_whisper::ensure_whisper_assets(&bg) {
+                    tracing::warn!("whisper bootstrap failed: {e:?}");
+                }
+            }
+        }
+    });
     #[cfg(windows)]
-    crate::services::focus::start_focus_watcher(handle.clone());
+    {
+        crate::services::focus::start_focus_watcher(handle.clone());
+        crate::services::focus::note_external_foreground();
+    }
     Ok(())
 }

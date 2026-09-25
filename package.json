@@ -1,19 +1,23 @@
 {
   "name": "voxiva-voice",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/tauri-dev.mjs",
+    "dev:kill": "node -e \"import('./scripts/dev-port.mjs').then(m=>{m.killStaleVoxiva();m.killPort(1420);console.log('[dev:kill] port 1420 cleared')})\"",
+    "dev:web": "node scripts/web-dev.mjs",
+    "web:dev": "node scripts/web-dev.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
+    "tauri:dev": "node scripts/tauri-dev.mjs",
     "tauri:build": "tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
+    "@untitledui/icons": "^0.0.22",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0"

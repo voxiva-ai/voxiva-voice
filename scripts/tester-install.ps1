@@ -3,9 +3,9 @@ $ErrorActionPreference = "Stop"
 # IMPORTANT: this script must work when executed via `irm ... | iex`.
 # Some environments are picky about `param(...)` in that mode, so we avoid it.
 # Optional overrides via env vars:
-# - $env:VOXIVA_REPO (default: PavelCRG/Voxiva-Voice)
+# - $env:VOXIVA_REPO (default: voxiva-ai/voxiva-voice)
 # - $env:VOXIVA_ASSET_PATTERN (default: *.exe; *.msi is still supported)
-$Repo = if ($env:VOXIVA_REPO) { $env:VOXIVA_REPO } else { "PavelCRG/Voxiva-Voice" }
+$Repo = if ($env:VOXIVA_REPO) { $env:VOXIVA_REPO } else { "voxiva-ai/voxiva-voice" }
 $AssetPattern = if ($env:VOXIVA_ASSET_PATTERN) { $env:VOXIVA_ASSET_PATTERN } else { "*.exe" }
 
 function Get-LatestRelease {

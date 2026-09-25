@@ -1,102 +1,158 @@
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
-import logoUrl from "@/assets/brand/voxiva-mark.svg";
+import logoUrl from "@/assets/brand/voxiva-voice-logo.png";
+import hudIconUrl from "@/assets/brand/voxiva-voice-logo.png";
 
-const ru = typeof navigator !== "undefined" && navigator.language.toLowerCase().startsWith("ru");
-
-const copy = {
-  micPtt: ru ? "Удерживай" : "Hold",
-  micToggle: ru ? "Нажми" : "Click",
-  recording: ru ? "Говори" : "Speak",
-  typing: ru ? "Печатаю" : "Typing",
+type Settings = {
+  recordingMode: "pushToTalk" | "toggle";
+  hudMode?: "full" | "iconOnly";
+  uiLocale?: string;
 };
 
-type HudPayload = { phase: string; level?: number };
-type Settings = { recordingMode: "pushToTalk" | "toggle"; hudMode?: "full" | "iconOnly" };
+function hudCopy(uiLocale?: string) {
+  const ru = (uiLocale ?? navigator.language).toLowerCase().startsWith("ru");
+  return {
+    micPtt: ru ? "Удерживай для диктовки" : "Hold to dictate",
+    micToggle: ru ? "Нажми для диктовки" : "Click to dictate",
+  };
+}
 
+type HudPayload = { phase: string; level?: number };
+
+const HUD_H = 36;
+const HUD_W_FULL = 128;
+const HUD_ICON = 36;
+const LOGO_RADIUS = "22.7%";
+
+const ACCENT = "rgba(90,166,255,0.5)";
+const ATTENTION = "rgba(239,195,90,0.95)";
+
+document.documentElement.style.cssText =
+  "margin:0;width:100%;height:100%;overflow:hidden;background:transparent;";
 document.body.style.cssText =
-  "margin:0;background:#080b12;color:#e8ecf4;font-family:system-ui,sans-serif;user-select:none;overflow:hidden;width:100vw;height:100vh;display:flex;align-items:stretch;justify-content:stretch;";
-document.documentElement.style.cssText = "background:#080b12;width:100vw;height:100vh;overflow:hidden;";
+  "margin:0;width:100%;height:100%;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch;background:transparent;font-family:DM Sans,Segoe UI,system-ui,sans-serif;user-select:none;";
+
+const shell = document.createElement("div");
+shell.setAttribute("data-tauri-drag-region", "");
+shell.style.cssText = [
+  "display:flex",
+  "align-items:center",
+  "justify-content:center",
+  "width:100%",
+  "height:100%",
+  "box-sizing:border-box",
+  "cursor:grab",
+].join(";");
 
 const pill = document.createElement("div");
 pill.setAttribute("data-tauri-drag-region", "");
-pill.style.cssText =
-  [
-    "-webkit-app-region:drag",
-    "display:flex",
-    "align-items:center",
-    "gap:7px",
-    "margin:0",
-    "padding:5px 8px",
-    "border-radius:12px",
-    "border:1px solid rgba(122,139,185,0.22)",
-    "background:linear-gradient(180deg,rgba(15,19,31,1),rgba(8,10,16,1))",
-    "box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 10px 26px rgba(0,0,0,0.34)",
-    "width:100%",
-    "height:100%",
-    "box-sizing:border-box",
-    "overflow:hidden",
-  ].join(";");
+pill.style.cssText = [
+  "display:inline-flex",
+  "align-items:center",
+  "justify-content:center",
+  "gap:5px",
+  "height:100%",
+  "width:100%",
+  "padding:0 5px",
+  "border-radius:10px",
+  "border:none",
+  "background:rgba(7,9,14,0.92)",
+  "box-sizing:border-box",
+].join(";");
+
+const logoWrap = document.createElement("button");
+logoWrap.type = "button";
+logoWrap.style.cssText = [
+  "-webkit-app-region:no-drag",
+  "-webkit-appearance:none",
+  "appearance:none",
+  "width:28px",
+  "height:28px",
+  "flex:0 0 28px",
+  "padding:0",
+  "margin:0",
+  "border:none",
+  "outline:none",
+  "border-radius:8px",
+  "background:transparent",
+  "cursor:pointer",
+  "display:inline-flex",
+  "align-items:center",
+  "justify-content:center",
+  "overflow:hidden",
+  "transition:transform 0.14s ease,filter 0.14s ease",
+].join(";");
 
 const logo = document.createElement("img");
 logo.src = logoUrl;
 logo.alt = "Voxiva";
-logo.style.cssText =
-  "width:24px;height:24px;flex:0 0 auto;filter:drop-shadow(0 5px 10px rgba(0,0,0,0.38));";
-
-const center = document.createElement("div");
-center.setAttribute("data-tauri-drag-region", "");
-center.style.cssText =
-  "display:flex;flex-direction:column;min-width:0;flex:1;gap:6px;justify-content:center;padding:0 2px;";
-
-const status = document.createElement("div");
-status.id = "vv-hud-status";
-status.style.cssText =
-  "display:none;";
-status.textContent = "";
+logo.draggable = false;
+logo.style.cssText = [
+  "width:100%",
+  "height:100%",
+  "border-radius:8px",
+  "display:block",
+  "object-fit:contain",
+  "pointer-events:none",
+  "background:transparent",
+].join(";");
+logoWrap.appendChild(logo);
 
 const meter = document.createElement("div");
 meter.style.cssText =
-  "display:flex;align-items:center;justify-content:center;gap:3px;height:18px;opacity:0.96;flex:1;min-width:0;";
-const bars = Array.from({ length: 10 }).map(() => {
+  "display:flex;align-items:center;justify-content:center;gap:2px;width:48px;height:24px;flex:0 0 48px;";
+const bars = Array.from({ length: 6 }).map(() => {
   const b = document.createElement("div");
   b.style.cssText =
-    "width:5px;height:4px;border-radius:99px;background:rgba(98,128,220,0.42);transition:height 90ms linear, background 140ms ease, opacity 140ms ease, transform 120ms ease;";
+    "width:3px;height:4px;border-radius:99px;background:rgba(90,166,255,0.35);transition:height 90ms linear,background 140ms ease;";
   meter.appendChild(b);
   return b;
 });
 
-center.appendChild(status);
-center.appendChild(meter);
-
 const mic = document.createElement("button");
 mic.type = "button";
-mic.style.cssText =
-  [
-    "-webkit-app-region:no-drag",
-    "width:26px",
-    "height:26px",
-    "border-radius:10px",
-    "border:1px solid rgba(126,149,215,0.32)",
-    "background:linear-gradient(180deg,rgba(51,69,118,0.86),rgba(30,41,78,0.94))",
-    "color:#e8ecf4",
-    "cursor:pointer",
-    "display:flex",
-    "align-items:center",
-    "justify-content:center",
-    "padding:0",
-    "flex:0 0 auto",
-    "box-shadow:inset 0 1px 0 rgba(255,255,255,0.12)",
-    "transition:transform 0.12s ease,background 0.15s ease,box-shadow 0.15s ease",
-  ].join(";");
+mic.style.cssText = [
+  "-webkit-app-region:no-drag",
+  "width:24px",
+  "height:24px",
+  "flex:0 0 24px",
+  "border-radius:7px",
+  "border:none",
+  "background:rgba(90,166,255,0.14)",
+  "color:#eef2f8",
+  "cursor:pointer",
+  "display:inline-flex",
+  "align-items:center",
+  "justify-content:center",
+  "padding:0",
+  "margin:0",
+  "line-height:0",
+].join(";");
 mic.setAttribute("aria-label", "microphone");
 mic.innerHTML =
-  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/></svg>';
+  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>';
 
-pill.appendChild(logo);
-pill.appendChild(center);
+pill.appendChild(logoWrap);
+pill.appendChild(meter);
 pill.appendChild(mic);
-document.body.appendChild(pill);
+shell.appendChild(pill);
+document.body.appendChild(shell);
+
+function beginHudDrag(event: PointerEvent) {
+  if (event.button !== 0) return;
+  if ((event.target as HTMLElement).closest("button")) return;
+  shell.style.cursor = "grabbing";
+  void getCurrentWindow()
+    .startDragging()
+    .catch(() => undefined)
+    .finally(() => {
+      shell.style.cursor = "grab";
+    });
+}
+
+shell.addEventListener("pointerdown", beginHudDrag);
+pill.addEventListener("pointerdown", beginHudDrag);
 
 let recordingMode: Settings["recordingMode"] = "pushToTalk";
 let hudMode: NonNullable<Settings["hudMode"]> = "full";
@@ -104,48 +160,76 @@ let targetLevel = 0;
 let displayLevel = 0;
 let phase: "idle" | "recording" | "transcribing" | "error" = "idle";
 
+async function syncHudShape(mode: NonNullable<Settings["hudMode"]>) {
+  const iconOnly = mode === "iconOnly";
+  const w = iconOnly ? HUD_ICON : HUD_W_FULL;
+  const h = iconOnly ? HUD_ICON : HUD_H;
+  try {
+    const win = getCurrentWindow();
+    await win.setBackgroundColor([0, 0, 0, 0]);
+    await invoke("clip_hud_window", { width: w, height: h, iconOnly });
+  } catch {
+    /* ignore */
+  }
+}
+
+async function resizeHud(mode: NonNullable<Settings["hudMode"]>) {
+  try {
+    const win = getCurrentWindow();
+    const w = mode === "iconOnly" ? HUD_ICON : HUD_W_FULL;
+    const h = mode === "iconOnly" ? HUD_ICON : HUD_H;
+    await win.setSize(new LogicalSize(w, h));
+    await syncHudShape(mode);
+  } catch {
+    /* ignore */
+  }
+}
+
+function styleLogo(rec: boolean, typing: boolean, err: boolean) {
+  logoWrap.style.transform = "scale(1)";
+  logoWrap.style.boxShadow = "none";
+  logoWrap.style.opacity = "1";
+  pill.style.boxShadow = "none";
+  pill.style.border = "none";
+  logo.style.filter = "none";
+
+  if (rec) {
+    logoWrap.style.opacity = "0.92";
+    return;
+  }
+  if (typing) {
+    logoWrap.style.opacity = "0.78";
+    return;
+  }
+  if (err) {
+    logoWrap.style.opacity = "0.65";
+  }
+}
+
 function renderBars(level: number) {
+  if (hudMode === "iconOnly") return;
   const l = Math.max(0, Math.min(1, level));
   const n = bars.length;
   const mid = (n - 1) / 2;
   for (let i = 0; i < n; i++) {
-    const dist = Math.abs(i - mid) / mid;
+    const dist = Math.abs(i - mid) / Math.max(mid, 1);
     const centerBias = 1 - dist;
-    const idlePulse = phase === "idle" ? 0.1 + centerBias * 0.15 : 0;
-    const v = Math.max(0, Math.min(1, l * (0.35 + centerBias * 0.9) + idlePulse));
-    const h = Math.round(3 + 14 * v);
-    bars[i].style.height = `${h}px`;
-    const active = phase === "recording";
-    bars[i].style.background = active ? "rgba(245,199,74,0.9)" : "rgba(98,128,220,0.45)";
-    bars[i].style.opacity = phase === "transcribing" ? "0.38" : active ? "1" : "0.72";
-    bars[i].style.transform = `scaleY(${active ? 1 : 0.92})`;
+    const v = Math.max(0, Math.min(1, l * (0.35 + centerBias * 0.9)));
+    bars[i].style.height = `${Math.round(4 + 14 * v)}px`;
+    bars[i].style.background = phase === "recording" ? ATTENTION : ACCENT;
   }
 }
 
 function setPhase(next: "idle" | "recording" | "transcribing" | "error") {
   phase = next;
   const rec = next === "recording";
-  const typing = next === "transcribing";
-  const err = next === "error";
-  // keep HUD minimal: no text, only colors + meter
-  mic.style.transform = rec ? "scale(1.05)" : typing ? "scale(0.98)" : "scale(1)";
-  mic.style.boxShadow = rec
-    ? "0 0 0 2px rgba(245,199,74,0.18),inset 0 1px 0 rgba(255,255,255,0.16)"
-    : "inset 0 1px 0 rgba(255,255,255,0.12)";
-  mic.style.background = rec
-    ? "linear-gradient(180deg,rgba(218,171,57,0.95),rgba(134,92,22,0.98))"
-    : typing
-      ? "linear-gradient(180deg,rgba(70,90,120,0.40),rgba(35,45,70,0.70))"
-      : err
-        ? "linear-gradient(180deg,rgba(200,70,70,0.55),rgba(110,30,30,0.85))"
-      : "linear-gradient(180deg,rgba(51,69,118,0.86),rgba(30,41,78,0.94))";
+  styleLogo(rec, next === "transcribing", next === "error");
+  mic.style.background = rec ? "rgba(239,195,90,0.24)" : "rgba(90,166,255,0.14)";
   renderBars(displayLevel);
 }
 
 void listen<HudPayload>("vv:hud", (e) => {
-  if (typeof e.payload.level === "number") {
-    targetLevel = e.payload.level;
-  }
+  if (typeof e.payload.level === "number") targetLevel = e.payload.level;
   if (e.payload.phase === "recording") setPhase("recording");
   if (e.payload.phase === "transcribing") setPhase("transcribing");
   if (e.payload.phase === "error") setPhase("error");
@@ -155,11 +239,48 @@ void listen<HudPayload>("vv:hud", (e) => {
 function applyHudSettings(s: Settings) {
   recordingMode = s.recordingMode ?? "pushToTalk";
   hudMode = s.hudMode ?? "full";
-  mic.title = recordingMode === "toggle" ? copy.micToggle : copy.micPtt;
-  meter.style.display = hudMode === "iconOnly" ? "none" : "flex";
-  center.style.display = hudMode === "iconOnly" ? "none" : "flex";
-  pill.style.justifyContent = hudMode === "iconOnly" ? "center" : "stretch";
-  pill.style.gap = hudMode === "iconOnly" ? "0" : "7px";
+  const copy = hudCopy(s.uiLocale);
+  const title = recordingMode === "toggle" ? copy.micToggle : copy.micPtt;
+  mic.title = title;
+  logoWrap.title = title;
+  const iconOnly = hudMode === "iconOnly";
+  meter.style.display = iconOnly ? "none" : "flex";
+  mic.style.display = iconOnly ? "none" : "inline-flex";
+
+  if (iconOnly) {
+    pill.style.background = "transparent";
+    pill.style.padding = "0";
+    pill.style.gap = "0";
+    pill.style.borderRadius = "0";
+    pill.style.boxShadow = "none";
+    shell.style.padding = "0";
+    shell.style.cursor = "grab";
+    shell.style.clipPath = `inset(0 round ${LOGO_RADIUS})`;
+    shell.style.overflow = "hidden";
+    logoWrap.style.width = "100%";
+    logoWrap.style.height = "100%";
+    logoWrap.style.flex = "1 1 auto";
+    logoWrap.style.borderRadius = LOGO_RADIUS;
+    logo.style.borderRadius = LOGO_RADIUS;
+    logo.src = hudIconUrl;
+  } else {
+    shell.style.clipPath = "none";
+    shell.style.overflow = "visible";
+    pill.style.background = "rgba(7,9,14,0.92)";
+    pill.style.padding = "0 5px";
+    pill.style.gap = "5px";
+    pill.style.borderRadius = "10px";
+    pill.style.boxShadow = "none";
+    shell.style.padding = "0";
+    logoWrap.style.width = "28px";
+    logoWrap.style.height = "28px";
+    logoWrap.style.flex = "0 0 28px";
+    logoWrap.style.borderRadius = "8px";
+    logo.style.borderRadius = "8px";
+    logo.src = logoUrl;
+  }
+
+  void resizeHud(hudMode);
 }
 
 void listen<Settings>("vv:hud-settings", (e) => {
@@ -167,71 +288,142 @@ void listen<Settings>("vv:hud-settings", (e) => {
 });
 
 function tick() {
-  // Smooth level animation + quick decay.
-  // Use a lightweight timer instead of rAF to avoid burning cycles while the HUD is idle.
-  const decay = phase === "recording" ? 0.92 : 0.86;
-  targetLevel *= decay;
-  displayLevel = displayLevel * 0.75 + targetLevel * 0.25;
-  renderBars(displayLevel);
-  window.setTimeout(tick, phase === "recording" ? 33 : 66);
+  if (phase === "recording") {
+    targetLevel *= 0.92;
+    displayLevel = displayLevel * 0.75 + targetLevel * 0.25;
+    renderBars(displayLevel);
+    window.setTimeout(tick, 40);
+  } else {
+    displayLevel *= 0.8;
+    renderBars(displayLevel);
+    window.setTimeout(tick, 200);
+  }
 }
 tick();
 
 void (async () => {
   try {
+    await syncHudShape("full");
     const s = await invoke<Settings>("get_settings");
     applyHudSettings(s);
   } catch {
-    mic.title = copy.micPtt;
+    logoWrap.title = hudCopy().micPtt;
+    void resizeHud("full");
   }
 })();
 
 function micDown() {
   void invoke("hud_ptt_pointer_down").catch(() => {});
 }
-
 function micUp() {
   void invoke("hud_ptt_pointer_up").catch(() => {});
 }
-
 function micToggle() {
   void invoke("hud_toggle_click").catch(() => {});
 }
 
-mic.addEventListener("pointerdown", (ev) => {
-  ev.preventDefault();
-  mic.setPointerCapture(ev.pointerId);
-  if (recordingMode === "pushToTalk") micDown();
-});
+function bindMic(el: HTMLElement, opts?: { dragOrPtt?: boolean }) {
+  let downX = 0;
+  let downY = 0;
+  let dragging = false;
+  let pttActive = false;
+  let pttTimer: ReturnType<typeof setTimeout> | undefined;
 
-mic.addEventListener("pointerup", (ev) => {
-  ev.preventDefault();
-  try {
-    mic.releasePointerCapture(ev.pointerId);
-  } catch {
-    /* ignore */
+  function clearPttTimer() {
+    if (pttTimer !== undefined) {
+      clearTimeout(pttTimer);
+      pttTimer = undefined;
+    }
   }
-  if (recordingMode === "pushToTalk") micUp();
-});
 
-// Fallback for environments where pointer events are flaky.
-mic.addEventListener("mousedown", (ev) => {
-  ev.preventDefault();
-  if (recordingMode === "pushToTalk") micDown();
-});
+  function wantsDragOrPtt() {
+    return opts?.dragOrPtt === true && hudMode === "iconOnly";
+  }
 
-mic.addEventListener("mouseup", (ev) => {
-  ev.preventDefault();
-  if (recordingMode === "pushToTalk") micUp();
-});
-
-mic.addEventListener("pointercancel", () => {
-  if (recordingMode === "pushToTalk") micUp();
-});
-
-mic.addEventListener("click", (ev) => {
-  if (recordingMode === "toggle") {
+  el.addEventListener("pointerdown", (ev) => {
+    if (ev.button !== 0) return;
     ev.preventDefault();
-    micToggle();
-  }
-});
+    downX = ev.clientX;
+    downY = ev.clientY;
+    dragging = false;
+    pttActive = false;
+    clearPttTimer();
+    el.setPointerCapture(ev.pointerId);
+
+    if (recordingMode !== "pushToTalk") return;
+
+    if (wantsDragOrPtt()) {
+      pttTimer = setTimeout(() => {
+        pttTimer = undefined;
+        if (dragging) return;
+        pttActive = true;
+        micDown();
+      }, 120);
+      return;
+    }
+
+    pttActive = true;
+    micDown();
+  });
+
+  el.addEventListener("pointermove", (ev) => {
+    if (!wantsDragOrPtt() || !el.hasPointerCapture(ev.pointerId) || dragging) return;
+    const dx = ev.clientX - downX;
+    const dy = ev.clientY - downY;
+    if (dx * dx + dy * dy < 36) return;
+    dragging = true;
+    clearPttTimer();
+    if (pttActive) {
+      pttActive = false;
+      micUp();
+    }
+    shell.style.cursor = "grabbing";
+    void getCurrentWindow()
+      .startDragging()
+      .catch(() => undefined)
+      .finally(() => {
+        shell.style.cursor = "grab";
+      });
+  });
+
+  el.addEventListener("pointerup", (ev) => {
+    ev.preventDefault();
+    clearPttTimer();
+    try {
+      el.releasePointerCapture(ev.pointerId);
+    } catch {
+      /* ignore */
+    }
+    if (dragging) {
+      dragging = false;
+      return;
+    }
+    if (recordingMode === "pushToTalk" && pttActive) micUp();
+    pttActive = false;
+  });
+
+  el.addEventListener("pointercancel", () => {
+    clearPttTimer();
+    if (dragging) {
+      dragging = false;
+      return;
+    }
+    if (recordingMode === "pushToTalk" && pttActive) micUp();
+    pttActive = false;
+  });
+
+  el.addEventListener("click", (ev) => {
+    if (dragging) {
+      ev.preventDefault();
+      dragging = false;
+      return;
+    }
+    if (recordingMode === "toggle") {
+      ev.preventDefault();
+      micToggle();
+    }
+  });
+}
+
+bindMic(mic);
+bindMic(logoWrap, { dragOrPtt: true });

@@ -101,7 +101,53 @@ where
             err_fn,
             None,
         ),
-        _ => device.build_input_stream(cfg, move |_data: &[f32], _| {}, err_fn, None),
+        SampleFormat::U16 => device.build_input_stream(
+            cfg,
+            move |data: &[u16], _| {
+                if stop.load(Ordering::Relaxed) {
+                    return;
+                }
+                if let Some(cb) = on_level.as_mut() {
+                    let mut sum = 0.0f32;
+                    let mut n = 0usize;
+                    for frame in data.chunks(channels) {
+                        let m = if channels == 1 {
+                            (frame[0] as f32 - 32768.0) / 32768.0
+                        } else {
+                            frame
+                                .iter()
+                                .map(|s| (*s as f32 - 32768.0) / 32768.0)
+                                .sum::<f32>()
+                                / channels.max(1) as f32
+                        };
+                        sum += m * m;
+                        n += 1;
+                    }
+                    if n > 0 {
+                        cb((sum / n as f32).sqrt(), n);
+                    }
+                }
+                let mut lock = samples.lock().unwrap();
+                if channels == 1 {
+                    lock.extend(
+                        data.iter()
+                            .map(|s| (*s as f32 - 32768.0) / 32768.0),
+                    );
+                } else {
+                    for frame in data.chunks(channels) {
+                        let m = frame
+                            .iter()
+                            .map(|s| (*s as f32 - 32768.0) / 32768.0)
+                            .sum::<f32>()
+                            / channels.max(1) as f32;
+                        lock.push(m);
+                    }
+                }
+            },
+            err_fn,
+            None,
+        ),
+        _ => Err(cpal::BuildStreamError::StreamConfigNotSupported),
     }
 }
 
@@ -137,7 +183,7 @@ where
 
     for attempt in 0..RETRIES {
         let res = match sample_format {
-            SampleFormat::F32 | SampleFormat::I16 => build_stream_with_level_cb(
+            SampleFormat::F32 | SampleFormat::I16 | SampleFormat::U16 => build_stream_with_level_cb(
                 &device,
                 &cfg,
                 sample_format,
@@ -148,7 +194,7 @@ where
             ),
             other => {
                 return Err(format!(
-                    "unsupported microphone sample format {other:?} (try a device that exposes f32 or i16)"
+                    "unsupported microphone sample format {other:?} (device must expose f32, i16, or u16)"
                 ));
             }
         };

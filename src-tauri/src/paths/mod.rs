@@ -25,3 +25,11 @@ pub fn tools_dir(app: &AppHandle) -> Result<PathBuf> {
 pub fn whisper_dir(app: &AppHandle) -> Result<PathBuf> {
     Ok(tools_dir(app)?.join("whisper"))
 }
+
+pub fn companion_token_file(app: &AppHandle) -> Result<PathBuf> {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .map_err(|e| AppError::Config(e.to_string()))?;
+    Ok(dir.join("companion-token.txt"))
+}

@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Voxiva Voice",
-  "version": "0.1.4",
+  "version": "0.1.0",
   "identifier": "ai.voxiva.voice",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run web:dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
@@ -14,12 +14,14 @@
       {
         "label": "main",
         "title": "Voxiva Voice",
-        "width": 980,
-        "height": 680,
-        "minWidth": 720,
-        "minHeight": 520,
+        "width": 440,
+        "height": 780,
+        "minWidth": 380,
+        "minHeight": 640,
         "resizable": true,
-        "center": true
+        "center": true,
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {
@@ -39,13 +41,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "plugins": {
-    "updater": {
-      "endpoints": [
-        "https://github.com/PavelCRG/Voxiva-Voice/releases/latest/download/latest.json"
-      ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ4RTRCQjY2RDk0MTc2MEEKUldRS2RrSFpacnZrU1A3cDdEV09xemtzakF5ek1yUFFmSGZwTHdyb3VDdGw5b2dMQWVyZXdYVmIK"
-    }
   }
 }

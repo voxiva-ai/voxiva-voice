@@ -1,6 +1,107 @@
-//! Foreground window title — used by the HUD to show where text will be pasted (Windows).
+//! Foreground window — HUD target hint + paste focus restore (Windows).
+
+use std::sync::Mutex;
 
 use tauri::{AppHandle, Emitter, Manager};
+
+#[derive(Debug, Clone)]
+pub struct PasteTarget {
+    #[cfg(windows)]
+    pub hwnd: isize,
+    pub title: Option<String>,
+}
+
+static LAST_EXTERNAL: Mutex<Option<PasteTarget>> = Mutex::new(None);
+
+pub fn is_own_window_title(title: &str) -> bool {
+    let t = title.trim().to_lowercase();
+    t.contains("voxiva voice")
+        || t.contains("voxiva hud")
+        || t == "voxiva hud"
+        || t.is_empty()
+}
+
+#[cfg(windows)]
+pub fn capture_paste_target() -> Option<PasteTarget> {
+    use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+
+    unsafe {
+        let hwnd = GetForegroundWindow();
+        if hwnd.is_invalid() {
+            return None;
+        }
+        Some(PasteTarget {
+            hwnd: hwnd.0 as isize,
+            title: foreground_window_title(),
+        })
+    }
+}
+
+#[cfg(not(windows))]
+pub fn capture_paste_target() -> Option<PasteTarget> {
+    None
+}
+
+/// Remember the last focused app that is not Voxiva Voice/HUD.
+pub fn note_external_foreground() {
+    let Some(title) = foreground_window_title() else {
+        return;
+    };
+    if is_own_window_title(&title) {
+        return;
+    }
+    if let Some(target) = capture_paste_target() {
+        if let Ok(mut slot) = LAST_EXTERNAL.lock() {
+            *slot = Some(target);
+        }
+    }
+}
+
+/// Target for paste — skip our own HUD/main when the mic was clicked there.
+pub fn paste_target_for_session() -> Option<PasteTarget> {
+    if let Some(title) = foreground_window_title() {
+        if !is_own_window_title(&title) {
+            if let Some(target) = capture_paste_target() {
+                if let Ok(mut slot) = LAST_EXTERNAL.lock() {
+                    *slot = Some(target.clone());
+                }
+                return Some(target);
+            }
+        }
+    }
+    LAST_EXTERNAL.lock().ok().and_then(|g| g.clone())
+}
+
+#[cfg(windows)]
+pub fn restore_paste_target(target: &PasteTarget) {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
+    use windows::Win32::UI::WindowsAndMessaging::{
+        GetWindowThreadProcessId, SetForegroundWindow, ShowWindow, SW_RESTORE,
+    };
+
+    unsafe {
+        let hwnd = HWND(target.hwnd as *mut _);
+        if hwnd.is_invalid() {
+            return;
+        }
+        let _ = ShowWindow(hwnd, SW_RESTORE);
+        let fg_thread = GetWindowThreadProcessId(hwnd, None);
+        let cur_thread = GetCurrentThreadId();
+        let attached = if fg_thread != 0 && fg_thread != cur_thread {
+            AttachThreadInput(cur_thread, fg_thread, true.into()).as_bool()
+        } else {
+            false
+        };
+        let _ = SetForegroundWindow(hwnd);
+        if attached {
+            let _ = AttachThreadInput(cur_thread, fg_thread, false.into());
+        }
+    }
+}
+
+#[cfg(not(windows))]
+pub fn restore_paste_target(_target: &PasteTarget) {}
 
 #[cfg(windows)]
 pub fn foreground_window_title() -> Option<String> {
@@ -31,6 +132,29 @@ pub fn foreground_window_title() -> Option<String> {
     None
 }
 
+/// Bracketed paste for standalone terminals / TUIs — not regular apps (Space, browsers, editors).
+pub fn prefers_terminal_paste(title: Option<&str>) -> bool {
+    let t = title.unwrap_or("").to_lowercase();
+    t.contains("windows terminal")
+        || t.contains("wezterm")
+        || t.contains("alacritty")
+        || t.contains("hyper")
+        || t.contains("tabby")
+        || t.contains("kitty")
+        || t.contains("iterm")
+        || t.contains("command prompt")
+        || t.contains("cmd.exe")
+        || t.contains("powershell")
+        || t.contains("pwsh")
+        || t.contains("opencode")
+        || t.contains("codex")
+        || t.contains("claude code")
+        || t.contains("lazygit")
+        || t.contains("vim")
+        || t.contains("nvim")
+        || t.contains("tmux")
+}
+
 #[cfg(windows)]
 pub fn start_focus_watcher(app: AppHandle) {
     use std::sync::OnceLock;
@@ -59,13 +183,13 @@ pub fn start_focus_watcher(app: AppHandle) {
             return;
         }
         let Some(app) = APP.get() else { return };
-        let title = super::focus::foreground_window_title().unwrap_or_default();
+        note_external_foreground();
+        let title = foreground_window_title().unwrap_or_default();
         let _ = app.emit_to(
             "hud",
             "vv:hud",
             serde_json::json!({ "phase": "idle", "target": title }),
         );
-        // Only show HUD when main window is minimized.
         let show_hud = app
             .get_webview_window("main")
             .and_then(|m| m.is_minimized().ok())
@@ -90,7 +214,6 @@ pub fn start_focus_watcher(app: AppHandle) {
             WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS,
         );
 
-        // Message loop required for WinEvent hooks.
         let mut msg = MSG::default();
         while GetMessageW(&mut msg, None, 0, 0).into() {
             let _ = TranslateMessage(&msg);

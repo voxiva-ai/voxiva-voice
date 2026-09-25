@@ -151,13 +151,12 @@ pub fn transcribe_whisper_cli(
     // - balanced decoding: small beam improves accuracy a lot on short phrases
     // - auto threads based on CPU count
     cmd.args(["-nt", "-np"]);
-    cmd.args(["-bs", "5", "-bo", "5"]);
-    // Cap threads to reduce CPU spikes / laptop fan noise.
-    // Whisper scales well, but saturating all cores is a bad default UX for a small dictation app.
+    // Greedy decode + short audio context — tuned for quick dictation phrases.
+    cmd.args(["-bs", "1", "-bo", "1", "-ac", "512"]);
     let threads = std::thread::available_parallelism()
         .map(|n| n.get())
-        .unwrap_or(4)
-        .clamp(1, 4)
+        .unwrap_or(2)
+        .clamp(2, 4)
         .to_string();
     cmd.args(["-t", threads.as_str()]);
 

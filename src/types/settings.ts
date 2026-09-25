@@ -37,4 +37,6 @@ export interface AppSettings {
   pasteMethod: PasteMethod;
   onboardingCompleted: boolean;
   hudMode: HudMode;
+  /** Local punctuation / capitalization after STT. */
+  humanizeText: boolean;
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Voxiva Voice",
-  "version": "0.1.4",
+  "version": "0.1.0",
   "identifier": "ai.voxiva.voice",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -14,10 +14,10 @@
       {
         "label": "main",
         "title": "Voxiva Voice",
-        "width": 980,
-        "height": 680,
-        "minWidth": 720,
-        "minHeight": 520,
+        "width": 440,
+        "height": 780,
+        "minWidth": 380,
+        "minHeight": 640,
         "resizable": true,
         "center": true
       }

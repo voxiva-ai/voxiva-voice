@@ -9,7 +9,7 @@ use tauri::Emitter;
 use tauri::Manager;
 
 use crate::config::{AppSettings, RecordingMode};
-use crate::services::{audio, dictionary, focus, injection, stt};
+use crate::services::{audio, dictionary, focus, humanize, injection, stt};
 
 /// Tracks an active capture session (`stop` flag for cpal loop).
 pub struct DictationGate {
@@ -90,13 +90,13 @@ fn has_enough_audio(audio: &audio::CapturedAudio) -> bool {
     }
 
     let duration_ms = (audio.samples.len() as f64 / audio.sample_rate_hz as f64) * 1000.0;
-    if duration_ms < 180.0 {
+    if duration_ms < 140.0 {
         return false;
     }
 
     let sum = audio.samples.iter().map(|s| s * s).sum::<f32>();
     let rms = (sum / audio.samples.len() as f32).sqrt();
-    rms >= 0.002
+    rms >= 0.0015
 }
 
 pub fn begin_session(app: AppHandle, settings: AppSettings) {
@@ -114,11 +114,14 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
     }
 
     set_hud_visible(&app, true);
+    focus::note_external_foreground();
     let title = focus::foreground_window_title();
+    let paste_target = focus::paste_target_for_session();
     emit_hud(&app, "recording", title);
 
     let app_th = app.clone();
     let settings_th = settings;
+    let paste_target_th = paste_target;
     thread::spawn(move || {
         let stop = {
             let gate = match app_th.try_state::<DictationGate>() {
@@ -182,17 +185,31 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
             }
         };
         let text = dictionary::apply(&text, &settings_th.dict_replacements);
+        let text = if settings_th.humanize_text {
+            humanize::humanize(&text)
+        } else {
+            text
+        };
         if text.trim().is_empty() {
             tracing::info!("skipping dictation paste: transcription returned empty text");
             emit_hud(&app_th, "idle", focus::foreground_window_title());
             clear_dictation_gate(&app_th);
             return;
         }
+        let duration_secs = if audio.sample_rate_hz > 0 {
+            audio.samples.len() as f64 / audio.sample_rate_hz as f64
+        } else {
+            0.0
+        };
+        if let Err(e) = crate::stats_store::record_dictation(&app_th, &text, duration_secs) {
+            tracing::warn!("stats: {e}");
+        }
         let paste_method = settings_th.paste_method;
 
         let h = app_th.clone();
+        let target = paste_target_th;
         if let Err(e) = app_th.run_on_main_thread(move || {
-            if let Err(e) = injection::paste_text_with_method(&text, paste_method) {
+            if let Err(e) = injection::paste_text_with_method(&text, paste_method, target.as_ref()) {
                 tracing::warn!("paste: {e}");
             }
             let idle_target = focus::foreground_window_title();
@@ -316,13 +333,27 @@ pub fn start_voice_activation_loop(app: AppHandle) {
             }
         };
         let text = dictionary::apply(&text, &settings.dict_replacements);
+        let text = if settings.humanize_text {
+            humanize::humanize(&text)
+        } else {
+            text
+        };
         if text.trim().is_empty() {
             continue;
+        }
+        let duration_secs = if captured.sample_rate_hz > 0 {
+            captured.samples.len() as f64 / captured.sample_rate_hz as f64
+        } else {
+            0.0
+        };
+        if let Err(e) = crate::stats_store::record_dictation(&app, &text, duration_secs) {
+            tracing::warn!("stats: {e}");
         }
         let paste_method = settings.paste_method;
         let h = app.clone();
         if let Err(e) = app.run_on_main_thread(move || {
-            if let Err(e) = injection::paste_text_with_method(&text, paste_method) {
+            let paste_target = focus::paste_target_for_session();
+            if let Err(e) = injection::paste_text_with_method(&text, paste_method, paste_target.as_ref()) {
                 tracing::warn!("voice activation paste: {e}");
             }
             emit_hud(&h, "idle", focus::foreground_window_title());

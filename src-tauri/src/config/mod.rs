@@ -57,10 +57,10 @@ pub enum PasteMethod {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum HudMode {
-    /// Logo + voice wave + mic button.
+    /// Logo + wave + mic button.
     #[default]
     Full,
-    /// Logo + mic button only.
+    /// Compact logo only — hold/click logo to dictate.
     IconOnly,
 }
 
@@ -110,12 +110,19 @@ pub struct AppSettings {
     pub onboarding_completed: bool,
     #[serde(default)]
     pub hud_mode: HudMode,
+    /// Insert commas / periods / capitals after STT (local rules, no cloud).
+    #[serde(default = "default_humanize")]
+    pub humanize_text: bool,
+}
+
+fn default_humanize() -> bool {
+    true
 }
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 6,
+            schema_version: 7,
             dictation_language: DictationLanguage::default(),
             ui_locale: "en".to_owned(),
             ui_theme: UiTheme::default(),
@@ -130,6 +137,7 @@ impl Default for AppSettings {
             paste_method: PasteMethod::default(),
             onboarding_completed: false,
             hud_mode: HudMode::default(),
+            humanize_text: default_humanize(),
         }
     }
 }
@@ -160,6 +168,10 @@ impl AppSettings {
         if self.schema_version < 6 {
             self.hud_mode = HudMode::default();
             self.schema_version = 6;
+        }
+        if self.schema_version < 7 {
+            self.humanize_text = default_humanize();
+            self.schema_version = 7;
         }
         self
     }
