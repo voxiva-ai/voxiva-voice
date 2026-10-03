@@ -1,19 +1,23 @@
+import { useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useI18n } from "@/i18n/I18nContext";
 import logoUrl from "@/assets/brand/voxiva-voice-logo.png";
-import { IconHome, IconPhone, IconSettings } from "@/components/icons";
+import { IconHome, IconSettings } from "@/components/icons";
 import { WindowControls } from "@/components/shell/WindowControls";
-import { beginWindowDrag, toggleMaximize } from "@/features/ui/windowDrag";
+import { beginWindowDrag, ensureAppWindowSize, toggleMaximize } from "@/features/ui/windowDrag";
 
 const NAV = [
   { to: "/overview", end: true, labelKey: "nav.overview" as const, Icon: IconHome },
-  { to: "/phone", end: true, labelKey: "nav.phone" as const, Icon: IconPhone },
   { to: "/settings", end: false, labelKey: "nav.settings" as const, Icon: IconSettings },
 ];
 
 export function AppShell() {
   const { t } = useI18n();
   const { pathname } = useLocation();
+
+  useEffect(() => {
+    void ensureAppWindowSize();
+  }, []);
 
   return (
     <div className="vv-appShell">

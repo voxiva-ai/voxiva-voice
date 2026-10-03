@@ -27,13 +27,17 @@ import {
   IconInfo,
   IconKeyboard,
   IconMic,
+  IconPhone,
   IconSliders,
 } from "@/components/icons";
+import { PhonePairPanel } from "@/components/phone/PhonePairPanel";
+import { HELP_DOCS, HELP_LOCALES, type HelpLocale } from "@/content/helpDocs";
 
 const NAV = [
   { id: "look" as const, labelKey: "settings.section.look" as const, Icon: IconAppearance },
   { id: "voice" as const, labelKey: "settings.section.voice" as const, Icon: IconMic },
   { id: "input" as const, labelKey: "settings.section.input" as const, Icon: IconKeyboard },
+  { id: "phone" as const, labelKey: "settings.section.phone" as const, Icon: IconPhone },
   { id: "help" as const, labelKey: "settings.section.help" as const, Icon: IconHelp },
   { id: "history" as const, labelKey: "settings.section.history" as const, Icon: IconHistory },
   { id: "about" as const, labelKey: "settings.section.about" as const, Icon: IconInfo },
@@ -106,7 +110,7 @@ function ChoiceCard({
 export function SettingsPage() {
   const { t, locale, refresh: refreshI18n } = useI18n();
   const { meta } = useAppMetadata();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [section, setSection] = useState<SettingsSection>(() => {
     const raw = searchParams.get("section");
@@ -116,7 +120,10 @@ export function SettingsPage() {
   const [whisperCliPath, setWhisperCliPath] = useState("");
   const [whisperModelPath, setWhisperModelPath] = useState("");
   const [pasteMethod, setPasteMethod] = useState<PasteMethod>("ctrlV");
-  const [hudMode, setHudMode] = useState<HudMode>("full");
+  const [hudMode, setHudMode] = useState<HudMode>("iconOnly");
+  const [helpLocale, setHelpLocale] = useState<HelpLocale>(() =>
+    locale === "ru" ? "ru" : "en",
+  );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [whisperStatus, setWhisperStatus] = useState<string | null>(null);
   const [whisperError, setWhisperError] = useState<string | null>(null);
@@ -325,7 +332,10 @@ export function SettingsPage() {
             key={item.id}
             type="button"
             className={`vv-settingsNavItem${section === item.id ? " is-active" : ""}`}
-            onClick={() => setSection(item.id)}
+            onClick={() => {
+              setSection(item.id);
+              setSearchParams(item.id === "look" ? {} : { section: item.id }, { replace: true });
+            }}
           >
             <item.Icon size={16} />
             <span>{t(item.labelKey)}</span>
@@ -338,15 +348,6 @@ export function SettingsPage() {
           <header className="vv-settingsPanelHead">
             <div>
               <h2>{t(active.labelKey)}</h2>
-              <p className="vv-settingsHint">
-                {section === "look" && t("settings.intro")}
-                {section === "voice" && t("settings.voiceSectionSub")}
-                {section === "input" && t("settings.inputSectionSub")}
-                {section === "help" && t("settings.helpSectionSub")}
-                {section === "history" && t("settings.historyHint")}
-                {section === "about" && t("settings.aboutHint")}
-                {section === "advanced" && t("settings.advancedSectionSub")}
-              </p>
             </div>
             <div className="vv-settingsSaveMeta" aria-live="polite">
               {saving ? <span className="vv-settingsStatus">{t("settings.saving")}</span> : null}
@@ -357,7 +358,7 @@ export function SettingsPage() {
 
           {section === "look" && (
             <>
-              <SettingsBlock title={t("settings.uiLang")} subtitle={t("settings.uiLangSub")}>
+              <SettingsBlock title={t("settings.uiLang")}>
                 <div className="vv-langRow">
                   {(["en", "ru"] as const).map((code) => (
                     <button
@@ -389,7 +390,7 @@ export function SettingsPage() {
                 </div>
               </SettingsBlock>
 
-              <SettingsBlock title={t("settings.themesSectionTitle")} subtitle={t("settings.themesSectionSub")}>
+              <SettingsBlock title={t("settings.themesSectionTitle")}>
                 <div className="vv-choiceGrid is-three">
                   {themes.map((th) => (
                     <ChoiceCard
@@ -407,7 +408,7 @@ export function SettingsPage() {
                 </div>
               </SettingsBlock>
 
-              <SettingsBlock title={t("settings.widgetSectionTitle")} subtitle={t("settings.widgetSectionSub")}>
+              <SettingsBlock title={t("settings.widgetSectionTitle")}>
                 <div className="vv-choiceGrid">
                   {hudModes.map((m) => (
                     <ChoiceCard
@@ -425,7 +426,7 @@ export function SettingsPage() {
 
           {section === "voice" && (
             <>
-              <SettingsBlock title={t("settings.voiceSectionTitle")} subtitle={t("settings.voiceSectionSub")}>
+              <SettingsBlock title={t("settings.voiceSectionTitle")}>
                 <div className="vv-choiceGrid">
                   <div className="vv-choiceCard is-selected">
                     <span className="vv-choiceTop">
@@ -484,7 +485,7 @@ export function SettingsPage() {
 
           {section === "input" && (
             <>
-              <SettingsBlock title={t("settings.inputSectionTitle")} subtitle={t("settings.inputSectionSub")}>
+              <SettingsBlock title={t("settings.inputSectionTitle")}>
                 <div className="vv-grid2">
                   <SettingsField label={t("settings.dictationLang")}>
                     <select
@@ -563,20 +564,39 @@ export function SettingsPage() {
             </>
           )}
 
+          {section === "phone" && (
+            <SettingsBlock title={t("phone.title")}>
+              <PhonePairPanel />
+            </SettingsBlock>
+          )}
+
           {section === "help" && (
-            <SettingsBlock title={t("nav.instructions")} subtitle={t("settings.helpSectionSub")}>
+            <SettingsBlock title={HELP_DOCS[helpLocale].title}>
+              <nav className="vv-helpLocaleBar" aria-label="Language">
+                {HELP_LOCALES.map((loc, i) => (
+                  <span key={loc.id} className="vv-helpLocaleItem">
+                    {i > 0 ? <span className="vv-helpLocaleDot" aria-hidden>·</span> : null}
+                    <button
+                      type="button"
+                      className={`vv-helpLocaleBtn${helpLocale === loc.id ? " is-active" : ""}`}
+                      onClick={() => setHelpLocale(loc.id)}
+                    >
+                      {loc.label}
+                    </button>
+                  </span>
+                ))}
+              </nav>
+              <p className="vv-helpLead">{HELP_DOCS[helpLocale].lead}</p>
               <ol className="vv-helpList">
-                <li>{t("overview.step1")}</li>
-                <li>{t("overview.step2")}</li>
-                <li>{t("overview.step3")}</li>
-                <li>{t("settings.helpPaste")}</li>
-                <li>{t("settings.helpSpace")}</li>
+                {HELP_DOCS[helpLocale].steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
               </ol>
             </SettingsBlock>
           )}
 
           {section === "history" && (
-            <SettingsBlock title={t("nav.history")} subtitle={t("settings.historyHint")}>
+            <SettingsBlock title={t("nav.history")}>
               <div className="vv-overviewCards" style={{ marginTop: 0 }}>
                 <article className="vv-overviewCard">
                   <span className="vv-overviewLabel">{t("stats.words")}</span>
@@ -681,7 +701,7 @@ export function SettingsPage() {
           )}
 
           {section === "advanced" && (
-            <SettingsBlock title={t("settings.advancedSectionTitle")} subtitle={t("settings.advancedSectionSub")}>
+            <SettingsBlock title={t("settings.advancedSectionTitle")}>
               <div className="vv-aboutCard" style={{ marginBottom: "0.75rem" }}>
                 <strong>{t("settings.alwaysLocal")}</strong>
                 <p className="vv-settingsHint">{t("settings.alwaysLocalHint")}</p>

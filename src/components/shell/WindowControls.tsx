@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useI18n } from "@/i18n/I18nContext";
+
+async function showHud() {
+  try {
+    const hud = await WebviewWindow.getByLabel("hud");
+    if (!hud) return;
+    await hud.show();
+    await hud.setAlwaysOnTop(true);
+  } catch {
+    /* web */
+  }
+}
 
 export function WindowControls() {
   const { t } = useI18n();
@@ -36,7 +48,12 @@ export function WindowControls() {
         className="vv-winBtn"
         aria-label={t("win.minimize")}
         title={t("win.minimize")}
-        onClick={() => void getCurrentWindow().minimize()}
+        onClick={() =>
+          void (async () => {
+            await getCurrentWindow().minimize();
+            await showHud();
+          })()
+        }
       >
         <span className="vv-winGlyph is-min" />
       </button>

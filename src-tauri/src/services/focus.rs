@@ -74,7 +74,8 @@ pub fn restore_paste_target(target: &PasteTarget) {
     use windows::Win32::Foundation::HWND;
     use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
     use windows::Win32::UI::WindowsAndMessaging::{
-        GetWindowThreadProcessId, SetForegroundWindow, ShowWindow, SW_RESTORE,
+        GetForegroundWindow, GetWindowThreadProcessId, IsIconic, SetForegroundWindow, ShowWindow,
+        SW_RESTORE,
     };
 
     unsafe {
@@ -82,7 +83,19 @@ pub fn restore_paste_target(target: &PasteTarget) {
         if hwnd.is_invalid() {
             return;
         }
-        let _ = ShowWindow(hwnd, SW_RESTORE);
+
+        // Already foreground — do not touch window state. SW_RESTORE on a maximized
+        // Chrome/YouTube window un-maximizes / exits fullscreen and drops the caret.
+        let fg = GetForegroundWindow();
+        if !fg.is_invalid() && fg.0 == hwnd.0 {
+            return;
+        }
+
+        // Only restore when minimized. Never SW_RESTORE a maximized/fullscreen window.
+        if IsIconic(hwnd).as_bool() {
+            let _ = ShowWindow(hwnd, SW_RESTORE);
+        }
+
         let fg_thread = GetWindowThreadProcessId(hwnd, None);
         let cur_thread = GetCurrentThreadId();
         let attached = if fg_thread != 0 && fg_thread != cur_thread {

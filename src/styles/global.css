@@ -21,22 +21,50 @@ body {
   overflow: hidden;
 }
 
-::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(190, 194, 204, 0.42);
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  border-radius: 999px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
-}
+/* Thin rounded scrollbars — Space family; nearly invisible until hover */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(190, 194, 204, 0.45) rgba(255, 255, 255, 0.06);
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: rgba(190, 194, 204, 0.4) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+  margin: 3px;
+}
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(190, 194, 204, 0.36);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(210, 214, 224, 0.55);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+[data-theme="light"] * {
+  scrollbar-color: transparent transparent;
+}
+[data-theme="light"] *:hover {
+  scrollbar-color: color-mix(in srgb, var(--vv-text) 28%, transparent) transparent;
+}
+[data-theme="light"] *:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--vv-text) 28%, transparent);
 }
 
 a {
@@ -363,6 +391,13 @@ select.vv-control {
   min-height: 0;
   overflow: auto;
   padding: 1rem 1.1rem 1.25rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.vv-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .vv-content.is-settings {
@@ -478,6 +513,194 @@ select.vv-control {
   text-transform: uppercase;
 }
 
+/* —— Home / Overview —— */
+.vv-home {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.vv-homeHero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.vv-homeTitle {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.15;
+}
+.vv-homeTitleMuted { color: var(--vv-text); }
+.vv-homeTitleAccent { color: var(--vv-accent); }
+.vv-homeSub {
+  margin: 0.15rem 0 0;
+  color: var(--vv-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  max-width: 28rem;
+}
+.vv-homePrimary {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--vv-accent) 35%, var(--vv-border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--vv-accent) 22%, var(--vv-bg-raised)),
+    var(--vv-bg-raised)
+  );
+  color: var(--vv-text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, transform 140ms ease, background 140ms ease;
+}
+.vv-homePrimary:hover {
+  border-color: color-mix(in srgb, var(--vv-accent) 55%, var(--vv-border));
+  transform: translateY(-1px);
+}
+.vv-homePrimary:active { transform: none; }
+.vv-homePrimaryIcon,
+.vv-homePrimaryMic {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex: 0 0 auto;
+  background: var(--vv-accent);
+  color: var(--vv-on-accent);
+}
+.vv-homePrimaryMic {
+  margin-left: auto;
+  background: var(--vv-accent-soft);
+  color: var(--vv-accent);
+}
+.vv-homePrimaryText {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+.vv-homePrimaryText strong {
+  font-size: 0.92rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+.vv-homePrimaryText small {
+  color: var(--vv-muted);
+  font-size: 0.74rem;
+}
+.vv-homeSetup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+.vv-homeChip {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--vv-border);
+  background: var(--vv-bg-raised);
+  color: var(--vv-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.vv-homeChip:hover {
+  background: var(--vv-bg-hover);
+  border-color: var(--vv-border-strong);
+}
+.vv-homeChip svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--vv-accent);
+}
+.vv-homeChip span {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.vv-homeChip small {
+  color: var(--vv-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.vv-homeChip strong {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vv-homeStats {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  gap: 0.55rem;
+}
+.vv-statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--vv-border);
+  background: var(--vv-bg-raised);
+  min-height: 6.2rem;
+}
+.vv-statCard.is-hero {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--vv-accent) 14%, var(--vv-bg-raised)), var(--vv-bg-raised));
+  border-color: color-mix(in srgb, var(--vv-accent) 28%, var(--vv-border));
+}
+.vv-statIcon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--vv-accent-soft);
+  color: var(--vv-accent);
+}
+.vv-statLabel {
+  color: var(--vv-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.vv-statValue {
+  margin-top: auto;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.vv-statValueSm {
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+}
+@media (max-width: 420px) {
+  .vv-homeStats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .vv-statCard.is-hero {
+    grid-column: 1 / -1;
+  }
+}
+
 .vv-overviewValue {
   color: var(--vv-text);
   font-size: 0.92rem;
@@ -516,6 +739,53 @@ select.vv-control {
   font-family: var(--vv-mono);
 }
 
+.vv-helpLocaleBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem 0.35rem;
+  margin: 0 0 0.85rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--vv-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--vv-bg) 55%, transparent);
+}
+.vv-helpLocaleItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.vv-helpLocaleDot {
+  color: var(--vv-muted);
+  opacity: 0.7;
+  user-select: none;
+}
+.vv-helpLocaleBtn {
+  border: 0;
+  background: transparent;
+  color: var(--vv-muted);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  padding: 0.2rem 0.35rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+.vv-helpLocaleBtn:hover {
+  color: var(--vv-text);
+  background: var(--vv-bg-hover);
+}
+.vv-helpLocaleBtn.is-active {
+  color: var(--vv-accent);
+}
+.vv-helpLead {
+  margin: 0 0 0.75rem;
+  color: var(--vv-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
 .vv-helpList {
   margin: 0;
   padding-left: 1.1rem;
@@ -744,7 +1014,8 @@ select.vv-control {
 }
 .vv-settingsLayout {
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
+  /* Wide enough for Appearance / Дополнительно — never crush labels */
+  grid-template-columns: minmax(11.75rem, max-content) minmax(0, 1fr);
   height: 100%;
   min-height: 0;
   overflow: hidden;
@@ -752,14 +1023,22 @@ select.vv-control {
 .vv-settingsNav {
   display: flex;
   flex-direction: column;
-  gap: 0.12rem;
-  padding: 1rem 0.65rem;
+  gap: 0.08rem;
+  padding: 0.85rem 0.65rem;
   border-right: 1px solid var(--vv-border);
   background: transparent;
   overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  min-width: 11.75rem;
+}
+.vv-settingsNav::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 .vv-settingsNavTitle {
-  margin: 0 0.4rem 0.75rem;
+  margin: 0 0.4rem 0.55rem;
   color: var(--vv-muted);
   font-size: 0.68rem;
   font-weight: 700;
@@ -771,7 +1050,7 @@ select.vv-control {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.58rem 0.65rem;
+  padding: 0.5rem 0.7rem;
   border: 0;
   border-radius: 10px;
   background: transparent;
@@ -787,9 +1066,7 @@ select.vv-control {
   opacity: 0.9;
 }
 .vv-settingsNavItem span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 0 0 auto;
   white-space: nowrap;
 }
 .vv-settingsNavItem:hover {
@@ -808,7 +1085,15 @@ select.vv-control {
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  padding: 1.15rem 1.15rem 1.5rem;
+  padding: 1.15rem 1.25rem 1.5rem;
+  /* Scroll with wheel/trackpad — no visible scrollbar stick */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.vv-settingsPanel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 .vv-settingsPanelBody {
   max-width: 40rem;
@@ -1237,9 +1522,57 @@ select.vv-control {
   border-radius: 10px;
   box-shadow: none !important;
 }
-
 .vv-welcomeCta:focus,
 .vv-welcomeCta:focus-visible {
+  outline: none;
+}
+.vv-welcomeGate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+  width: min(100%, 20rem);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: vv-splashPop 0.45s ease both;
+}
+.vv-welcome.is-ready .vv-welcomeGate {
+  opacity: 1;
+  transform: none;
+}
+.vv-welcomeHint {
+  margin: 0;
+  text-align: center;
+  color: var(--vv-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  max-width: 18rem;
+}
+.vv-welcomeStart {
+  min-width: 11rem;
+  min-height: 48px;
+  padding: 0.65rem 1.4rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--vv-accent);
+  color: #061018;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+.vv-welcomeStart:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+.vv-welcomeStart:active {
+  transform: none;
+}
+.vv-welcomeStart:focus,
+.vv-welcomeStart:focus-visible {
   outline: none;
 }
 
@@ -1278,11 +1611,12 @@ select.vv-control {
   justify-content: center;
   width: 100%;
   height: 100%;
-  gap: 1rem;
+  gap: 0.85rem;
+  padding: 1.5rem;
   background: var(--vv-bg);
   position: relative;
   isolation: isolate;
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition: opacity 0.38s ease, transform 0.38s ease;
 }
 .vv-splash::before {
   content: "";
@@ -1290,38 +1624,88 @@ select.vv-control {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 70% 50% at 50% 35%, color-mix(in srgb, var(--vv-accent) 18%, transparent), transparent 62%);
+    radial-gradient(ellipse 80% 55% at 50% 32%, color-mix(in srgb, var(--vv-accent) 22%, transparent), transparent 64%),
+    radial-gradient(ellipse 50% 35% at 80% 90%, color-mix(in srgb, var(--vv-accent-2) 8%, transparent), transparent 55%);
   pointer-events: none;
 }
 .vv-splash.is-out {
   opacity: 0;
-  transform: scale(0.98);
+  transform: scale(0.985) translateY(-6px);
 }
 .vv-splashLogo {
-  width: 88px;
-  height: 88px;
+  width: 84px;
+  height: 84px;
   border-radius: 22px;
   object-fit: cover;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
-  animation: vv-splashPop 0.55s ease both;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.5);
+  animation: vv-splashPop 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 .vv-splashBrand {
   margin: 0;
-  font-size: 1.65rem;
+  font-size: 1.7rem;
   font-weight: 800;
-  letter-spacing: -0.04em;
-  animation: vv-splashPop 0.55s ease 0.12s both;
+  letter-spacing: -0.045em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.28rem;
 }
-.vv-splashBrand span {
+.vv-splashBrand .is-accent .vv-splashLetter {
   color: var(--vv-accent);
+}
+.vv-splashLetter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: vv-splashLetter 0.55s cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
+}
+.vv-splashTag {
+  margin: 0.35rem 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  text-align: center;
+  min-height: 2.6rem;
+}
+.vv-splashTagLine {
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  opacity: 0;
+  transform: translateY(8px);
+}
+.vv-splashTagLine.is-a {
+  color: var(--vv-muted);
+  animation: vv-splashPop 0.55s ease 0.95s both;
+}
+.vv-splashTagLine.is-b {
+  color: var(--vv-accent);
+  font-weight: 800;
+  font-size: 1.2rem;
+  animation: vv-splashPop 0.55s ease 1.25s both;
 }
 @keyframes vv-splashPop {
   from { opacity: 0; transform: translateY(8px) scale(0.96); }
   to { opacity: 1; transform: none; }
 }
+@keyframes vv-splashLetter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vv-splashLogo,
+  .vv-splashLetter,
+  .vv-splashTagLine {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
 
+.vv-phoneCard,
 .vv-phonePage .vv-phoneCard {
-  margin-top: 1rem;
+  margin-top: 0.35rem;
   padding: 1.1rem;
   border: 1px solid var(--vv-border);
   border-radius: 14px;
@@ -1330,6 +1714,12 @@ select.vv-control {
   flex-direction: column;
   align-items: center;
   gap: 0.85rem;
+}
+.vv-phoneCardEmbed {
+  border: 0;
+  background: transparent;
+  padding: 0.25rem 0 0;
+  margin: 0;
 }
 .vv-phoneHeaderRow {
   display: flex;
@@ -1632,9 +2022,6 @@ select.vv-control {
   .vv-choiceGrid.is-three,
   .vv-speakStage {
     grid-template-columns: 1fr;
-  }
-  .vv-settingsLayout {
-    grid-template-columns: 118px minmax(0, 1fr);
   }
   .vv-settingsPanel {
     padding: 1rem 0.95rem 1.35rem;

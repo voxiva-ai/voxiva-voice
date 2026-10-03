@@ -17,13 +17,16 @@ export function toggleMaximize() {
   }
 }
 
-/** Open welcome / first-run at compact phone-PC size. */
-export async function ensureWelcomeWindowSize() {
+/** Compact app window — tall enough for full Settings nav. */
+export async function ensureAppWindowSize() {
   try {
     const win = getCurrentWindow();
-    await win.setSize(new LogicalSize(440, 780));
+    await win.setSize(new LogicalSize(520, 900));
     await win.center();
   } catch {
     // web preview
   }
 }
+
+/** @deprecated use ensureAppWindowSize */
+export const ensureWelcomeWindowSize = ensureAppWindowSize;

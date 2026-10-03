@@ -41,9 +41,27 @@ impl DictationGate {
     }
 }
 
+fn main_is_minimized(app: &AppHandle) -> bool {
+    app.get_webview_window("main")
+        .and_then(|m| m.is_minimized().ok())
+        .unwrap_or(false)
+}
+
 fn set_hud_visible(app: &AppHandle, visible: bool) {
     if let Some(w) = app.get_webview_window("hud") {
-        let _ = if visible { w.show() } else { w.hide() };
+        if visible {
+            let _ = w.show();
+            let _ = w.set_always_on_top(true);
+        } else {
+            let _ = w.hide();
+        }
+    }
+}
+
+/// After paste: keep the floating icon if the main window is minimized.
+fn restore_hud_if_minimized(app: &AppHandle) {
+    if main_is_minimized(app) {
+        set_hud_visible(app, true);
     }
 }
 
@@ -209,10 +227,13 @@ pub fn begin_session(app: AppHandle, settings: AppSettings) {
         let h = app_th.clone();
         let target = paste_target_th;
         if let Err(e) = app_th.run_on_main_thread(move || {
+            // Hide HUD briefly so always-on-top overlay doesn't steal FG / kick browser fullscreen.
+            set_hud_visible(&h, false);
             if let Err(e) = injection::paste_text_with_method(&text, paste_method, target.as_ref())
             {
                 tracing::warn!("paste: {e}");
             }
+            restore_hud_if_minimized(&h);
             let idle_target = focus::foreground_window_title();
             emit_hud(&h, "idle", idle_target);
             clear_dictation_gate(&h);
@@ -353,12 +374,14 @@ pub fn start_voice_activation_loop(app: AppHandle) {
         let paste_method = settings.paste_method;
         let h = app.clone();
         if let Err(e) = app.run_on_main_thread(move || {
+            set_hud_visible(&h, false);
             let paste_target = focus::paste_target_for_session();
             if let Err(e) =
                 injection::paste_text_with_method(&text, paste_method, paste_target.as_ref())
             {
                 tracing::warn!("voice activation paste: {e}");
             }
+            restore_hud_if_minimized(&h);
             emit_hud(&h, "idle", focus::foreground_window_title());
         }) {
             tracing::warn!("voice activation run_on_main_thread: {e}");

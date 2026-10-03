@@ -45,10 +45,9 @@ fn paste_with_method(enigo: &mut Enigo, method: crate::config::PasteMethod) -> R
 
 fn prepare_focus(target: Option<&crate::services::focus::PasteTarget>) {
     if let Some(t) = target {
+        // One gentle restore — enough to steal FG without collapsing maximize/fullscreen.
         crate::services::focus::restore_paste_target(t);
-        thread::sleep(Duration::from_millis(90));
-        crate::services::focus::restore_paste_target(t);
-        thread::sleep(Duration::from_millis(60));
+        thread::sleep(Duration::from_millis(50));
     }
 }
 
@@ -65,8 +64,9 @@ pub fn paste_text_with_method(
 
     let mut clip = Clipboard::new().map_err(|e| e.to_string())?;
     clip.set_text(text).map_err(|e| e.to_string())?;
-    thread::sleep(Duration::from_millis(45));
+    thread::sleep(Duration::from_millis(35));
 
+    // Re-assert focus only if something (HUD) stole it while we set the clipboard.
     prepare_focus(target);
 
     let mut enigo = Enigo::new(&Settings::default()).map_err(|e| e.to_string())?;

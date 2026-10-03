@@ -72,6 +72,11 @@ export type MessageKey =
   | "settings.privacy"
   | "settings.dictJson"
   | "overview.minimizeHud"
+  | "overview.hudHint"
+  | "overview.setupTitle"
+  | "overview.statsTitle"
+  | "splash.line1"
+  | "splash.line2"
   | "settings.helpPaste"
   | "settings.helpSpace"
   | "settings.historyHint"
@@ -81,10 +86,13 @@ export type MessageKey =
   | "settings.section.look"
   | "settings.section.voice"
   | "settings.section.input"
+  | "settings.section.phone"
   | "settings.section.help"
   | "settings.section.history"
   | "settings.section.about"
   | "settings.section.advanced"
+  | "settings.lookHint"
+  | "welcome.hint"
   | "settings.save"
   | "settings.saved"
   | "settings.loading"
@@ -231,7 +239,12 @@ const en: Record<MessageKey, string> = {
   "overview.heroTitle": "Stop typing. Just speak.",
   "overview.heroBody": "Put the cursor anywhere. Hold your hotkey, speak, release — text lands in the focused app.",
   "overview.openSettings": "Open Settings",
-  "overview.minimizeHud": "Minimize to HUD",
+  "overview.minimizeHud": "Minimize",
+  "overview.hudHint": "Floating icon stays on screen",
+  "overview.setupTitle": "Setup",
+  "overview.statsTitle": "Your dictation",
+  "splash.line1": "Stop typing.",
+  "splash.line2": "Just speak.",
   "settings.helpPaste": "If paste fails, try another paste method in Settings → Input.",
   "settings.helpSpace": "In Voxiva Space terminals and agent chats: click the input first so the caret blinks, then dictate.",
   "settings.historyHint": "Recent dictation sessions.",
@@ -241,10 +254,13 @@ const en: Record<MessageKey, string> = {
   "settings.section.look": "Appearance",
   "settings.section.voice": "Voice",
   "settings.section.input": "Input",
+  "settings.section.phone": "Phone",
   "settings.section.help": "Help",
   "settings.section.history": "History",
   "settings.section.about": "About",
   "settings.section.advanced": "Advanced",
+  "settings.lookHint": "Language and theme — same look family as Space.",
+  "welcome.hint": "Hold your hotkey, speak, release — text lands where the cursor is.",
   "overview.openHistory": "History",
   "overview.openShortcuts": "Hotkey",
   "overview.howTitle": "How to use",
@@ -425,7 +441,12 @@ const ru: Record<MessageKey, string> = {
   "overview.heroTitle": "Хватит печатать. Просто говори.",
   "overview.heroBody": "Поставь курсор куда угодно. Удержи хоткей, говори, отпусти — текст появится в активном приложении.",
   "overview.openSettings": "Открыть настройки",
-  "overview.minimizeHud": "Свернуть в HUD",
+  "overview.minimizeHud": "Свернуть",
+  "overview.hudHint": "Иконка останется на экране",
+  "overview.setupTitle": "Настройка",
+  "overview.statsTitle": "Твоя диктовка",
+  "splash.line1": "Хватит печатать.",
+  "splash.line2": "Просто говори.",
   "settings.helpPaste": "Если текст не вставляется — смени способ вставки в Настройки → Ввод.",
   "settings.helpSpace": "В терминалах Voxiva Space и чатах агентов: сначала кликни в поле ввода, чтобы мигал курсор, потом диктуй.",
   "settings.historyHint": "Недавние сессии диктовки.",
@@ -435,10 +456,13 @@ const ru: Record<MessageKey, string> = {
   "settings.section.look": "Внешний вид",
   "settings.section.voice": "Голос",
   "settings.section.input": "Ввод",
+  "settings.section.phone": "Телефон",
   "settings.section.help": "Справка",
   "settings.section.history": "История",
   "settings.section.about": "О приложении",
   "settings.section.advanced": "Дополнительно",
+  "settings.lookHint": "Язык и тема — в той же палитре, что и Space.",
+  "welcome.hint": "Удержи хоткей, говори, отпусти — текст появится там, где курсор.",
   "overview.openHistory": "История",
   "overview.openShortcuts": "Хоткей",
   "overview.howTitle": "Как пользоваться",

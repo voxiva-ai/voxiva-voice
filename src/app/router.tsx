@@ -26,7 +26,7 @@ export function AppRouter() {
           <Route path="/instructions" element={<RedirectSettings section="help" />} />
           <Route path="/shortcuts" element={<RedirectSettings section="input" />} />
           <Route path="/account" element={<RedirectSettings section="about" />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/overview" replace />} />
         </Route>
       </Routes>
     </HashRouter>

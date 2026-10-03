@@ -33,6 +33,21 @@ document.documentElement.style.cssText =
 document.body.style.cssText =
   "margin:0;width:100%;height:100%;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch;background:transparent;font-family:DM Sans,Segoe UI,system-ui,sans-serif;user-select:none;";
 
+const pulseStyle = document.createElement("style");
+pulseStyle.textContent = `
+@keyframes vv-hud-rec {
+  0%, 100% { opacity: 1; filter: saturate(1) brightness(1); transform: scale(1); }
+  50% { opacity: 0.55; filter: saturate(1.35) brightness(1.18); transform: scale(0.96); }
+}
+@keyframes vv-hud-type {
+  0%, 100% { opacity: 0.9; filter: hue-rotate(0deg) brightness(1); }
+  50% { opacity: 0.4; filter: hue-rotate(-18deg) brightness(1.25); }
+}
+.vv-hud-pulse-rec { animation: vv-hud-rec 0.9s ease-in-out infinite; }
+.vv-hud-pulse-type { animation: vv-hud-type 0.7s ease-in-out infinite; }
+`;
+document.head.appendChild(pulseStyle);
+
 const shell = document.createElement("div");
 shell.setAttribute("data-tauri-drag-region", "");
 shell.style.cssText = [
@@ -186,6 +201,7 @@ async function resizeHud(mode: NonNullable<Settings["hudMode"]>) {
 }
 
 function styleLogo(rec: boolean, typing: boolean, err: boolean) {
+  logoWrap.classList.remove("vv-hud-pulse-rec", "vv-hud-pulse-type");
   logoWrap.style.transform = "scale(1)";
   logoWrap.style.boxShadow = "none";
   logoWrap.style.opacity = "1";
@@ -194,11 +210,11 @@ function styleLogo(rec: boolean, typing: boolean, err: boolean) {
   logo.style.filter = "none";
 
   if (rec) {
-    logoWrap.style.opacity = "0.92";
+    logoWrap.classList.add("vv-hud-pulse-rec");
     return;
   }
   if (typing) {
-    logoWrap.style.opacity = "0.78";
+    logoWrap.classList.add("vv-hud-pulse-type");
     return;
   }
   if (err) {

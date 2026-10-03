@@ -1,12 +1,17 @@
 import {
+  BarChart01,
+  Clock,
   Colors,
   ClockRewind,
+  Command,
   HelpCircle,
   Home01,
   InfoCircle,
   Keyboard01,
   Microphone01,
+  Minimize01,
   Phone01,
+  Recording01,
   Settings01,
   Sliders02,
 } from "@untitledui/icons";
@@ -27,3 +32,8 @@ export const IconSliders = (p: IconProps) => wrap(Sliders02, p);
 export const IconHelp = (p: IconProps) => wrap(HelpCircle, p);
 export const IconHistory = (p: IconProps) => wrap(ClockRewind, p);
 export const IconInfo = (p: IconProps) => wrap(InfoCircle, p);
+export const IconMinimize = (p: IconProps) => wrap(Minimize01, p);
+export const IconCommand = (p: IconProps) => wrap(Command, p);
+export const IconChart = (p: IconProps) => wrap(BarChart01, p);
+export const IconClock = (p: IconProps) => wrap(Clock, p);
+export const IconRecording = (p: IconProps) => wrap(Recording01, p);

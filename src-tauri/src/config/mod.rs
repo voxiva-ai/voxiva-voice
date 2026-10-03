@@ -58,9 +58,9 @@ pub enum PasteMethod {
 #[serde(rename_all = "camelCase")]
 pub enum HudMode {
     /// Logo + wave + mic button.
-    #[default]
     Full,
     /// Compact logo only — hold/click logo to dictate.
+    #[default]
     IconOnly,
 }
 
